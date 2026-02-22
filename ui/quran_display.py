@@ -32,9 +32,10 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
         )
         return
 
-    # Paginate
+    # Paginate (page-locked to avoid drifting windows)
     total = len(ayahs)
-    start = min(current_index, total - 1)
+    safe_index = min(current_index, total - 1)
+    start = (safe_index // AYAHS_PER_PAGE) * AYAHS_PER_PAGE
     end = min(start + AYAHS_PER_PAGE, total)
     page_ayahs = ayahs[start:end]
 
