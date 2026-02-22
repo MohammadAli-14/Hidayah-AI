@@ -9,16 +9,23 @@ from components.audio_player import audio_player
 
 def _build_playlist(ayahs: list[dict], audio_mode: str) -> list[dict]:
     """Build playlist for the frontend component."""
-    return [
-        {
+    playlist = []
+    
+    for i, a in enumerate(ayahs):
+        urls = [a.get("audio_url", "")]
+        if audio_mode == "Arabic + English Translation" and a.get("audio_en"):
+            urls.append(a.get("audio_en"))
+        elif audio_mode == "Arabic + Urdu Translation" and a.get("audio_ur"):
+            urls.append(a.get("audio_ur"))
+            
+        playlist.append({
             "idx": i,
-            "url": a.get("audio_url", ""),
+            "urls": urls,
             "surah": a.get("surah_name", ""),
             "ayahNum": a.get("number_in_surah", 0),
             "mode": audio_mode,
-        }
-        for i, a in enumerate(ayahs)
-    ]
+        })
+    return playlist
 
 
 def render_audio_player(ayahs: list[dict], current_index: int = 0):

@@ -2,6 +2,7 @@ const root = document.getElementById("root");
 
 let playlist = [];
 let currentIndex = 0;
+let currentSubIndex = 0;
 let isPlaying = false;
 let audioEl = null;
 let nextAudioEl = null;
@@ -122,25 +123,55 @@ function ensureAudio() {
     audioEl = new Audio();
     audioEl.preload = "auto";
     audioEl.onended = () => {
-      // Auto-advance while playing, with prebuffered swap for minimal gap.
+      const currentItem = playlist[currentIndex] || {};
+      const currentUrls = currentItem.urls || [];
+
+      // Advance sub-index if there are more translations for this Ayah
+      if (currentSubIndex < currentUrls.length - 1) {
+        currentSubIndex++;
+        const nextSubUrl = currentUrls[currentSubIndex] || "";
+
+        const preloadedSrc = nextAudioEl ? (nextAudioEl.currentSrc || nextAudioEl.src || "") : "";
+        if (nextAudioEl && nextSubUrl && preloadedSrc.includes(nextSubUrl)) {
+          const prevAudio = audioEl;
+          audioEl = nextAudioEl;
+          nextAudioEl = prevAudio;
+          audioEl.onended = prevAudio.onended;
+          isPlaying = true;
+          audioEl.play().catch(() => { });
+          preloadNextUrl(currentIndex, currentSubIndex + 1);
+          renderUI();
+          return;
+        }
+
+        audioEl.src = nextSubUrl;
+        audioEl.load();
+        if (isPlaying) {
+          audioEl.play().catch(() => { });
+        }
+        preloadNextUrl(currentIndex, currentSubIndex + 1);
+        renderUI();
+        return;
+      }
+
+      // If no more sub-urls, advance to next Ayah
+      currentSubIndex = 0;
       if (currentIndex < playlist.length - 1) {
         const nextIndex = currentIndex + 1;
         const nextItem = playlist[nextIndex] || {};
-        const nextUrl = nextItem.url || "";
+        const nextUrl = (nextItem.urls && nextItem.urls.length > 0) ? nextItem.urls[0] : "";
 
-        // If next audio is preloaded, swap players instantly.
         const preloadedSrc = nextAudioEl ? (nextAudioEl.currentSrc || nextAudioEl.src || "") : "";
         if (nextAudioEl && nextUrl && preloadedSrc.includes(nextUrl)) {
           const prevAudio = audioEl;
           audioEl = nextAudioEl;
           nextAudioEl = prevAudio;
 
-          // Rebind ended handler on the newly active element.
           audioEl.onended = prevAudio.onended;
           currentIndex = nextIndex;
           isPlaying = true;
-          audioEl.play().catch(() => {});
-          preloadNext(currentIndex);
+          audioEl.play().catch(() => { });
+          preloadNextUrl(currentIndex, 1);
           notifyParent();
           renderUI();
           return;
@@ -162,24 +193,33 @@ function ensureAudio() {
   }
 }
 
-function preloadNext(fromIndex) {
+function preloadNextUrl(idx, subIdx) {
   if (!nextAudioEl) return;
-  const nextIndex = fromIndex + 1;
-  if (nextIndex >= playlist.length) {
-    nextAudioEl.removeAttribute("src");
-    return;
+  let nextItem = playlist[idx] || {};
+  let urls = nextItem.urls || [];
+
+  let targetUrl = "";
+  if (subIdx < urls.length) {
+    targetUrl = urls[subIdx];
+  } else {
+    const nextIdx = idx + 1;
+    if (nextIdx >= playlist.length) {
+      nextAudioEl.removeAttribute("src");
+      return;
+    }
+    nextItem = playlist[nextIdx] || {};
+    urls = nextItem.urls || [];
+    targetUrl = urls[0] || "";
   }
 
-  const nextItem = playlist[nextIndex] || {};
-  const nextUrl = nextItem.url || "";
-  if (!nextUrl) {
+  if (!targetUrl) {
     nextAudioEl.removeAttribute("src");
     return;
   }
 
   const currentNextSrc = nextAudioEl.currentSrc || nextAudioEl.src || "";
-  if (!currentNextSrc.includes(nextUrl)) {
-    nextAudioEl.src = nextUrl;
+  if (!currentNextSrc.includes(targetUrl)) {
+    nextAudioEl.src = targetUrl;
     nextAudioEl.load();
   }
 }
@@ -187,17 +227,19 @@ function preloadNext(fromIndex) {
 function setIndex(idx, autoplay) {
   if (idx < 0 || idx >= playlist.length) return;
   currentIndex = idx;
+  currentSubIndex = 0;
   ensureAudio();
   const item = playlist[currentIndex] || {};
-  if (item.url) {
-    audioEl.src = item.url;
+  const targetUrl = (item.urls && item.urls.length > 0) ? item.urls[0] : "";
+  if (targetUrl) {
+    audioEl.src = targetUrl;
     audioEl.load();
     if (autoplay) {
-      audioEl.play().catch(() => {});
+      audioEl.play().catch(() => { });
       isPlaying = true;
     }
   }
-  preloadNext(currentIndex);
+  preloadNextUrl(currentIndex, currentSubIndex + 1);
   notifyParent();
   renderUI();
 }
@@ -205,7 +247,7 @@ function setIndex(idx, autoplay) {
 function togglePlay() {
   ensureAudio();
   if (audioEl.paused) {
-    audioEl.play().catch(() => {});
+    audioEl.play().catch(() => { });
     isPlaying = true;
   } else {
     audioEl.pause();
@@ -235,20 +277,21 @@ function onRender(data) {
   // so we must still load the source if audioEl has no src yet.
   const previousSrc = audioEl.currentSrc || audioEl.src || "";
   const targetItem = playlist[startIndex] || {};
-  const targetUrl = targetItem.url || "";
+  const targetUrl = (targetItem.urls && targetItem.urls.length > 0) ? targetItem.urls[0] : "";
 
   if (currentIndex !== startIndex || !previousSrc || (targetUrl && !previousSrc.includes(targetUrl))) {
     currentIndex = startIndex;
+    currentSubIndex = 0;
     if (targetUrl) {
       audioEl.src = targetUrl;
       audioEl.load();
     }
   }
 
-  preloadNext(currentIndex);
+  preloadNextUrl(currentIndex, currentSubIndex + 1);
 
   if (playFlag && audioEl.paused) {
-    audioEl.play().catch(() => {});
+    audioEl.play().catch(() => { });
     isPlaying = true;
   }
   if (!playFlag && !audioEl.paused) {

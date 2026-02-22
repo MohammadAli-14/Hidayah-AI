@@ -50,6 +50,8 @@ QURAN_API_BASE = "https://api.alquran.cloud/v1"
 ARABIC_EDITION = "ar.alafasy"       # Mishary Rashid Alafasy (with audio)
 ENGLISH_EDITION = "en.asad"         # Muhammad Asad English translation
 URDU_EDITION = "ur.jalandhry"       # Maulana Fateh Muhammad Jalandhry
+ENGLISH_AUDIO_EDITION = "en.walk"   # Ibrahim Walk
+URDU_AUDIO_EDITION = "ur.khan"      # Shamshad Ali Khan
 
 # ── Audio Modes ───────────────────────────────────────────────────
 AUDIO_MODES = [
