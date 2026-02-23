@@ -158,7 +158,7 @@ st.markdown(
 
         /* ── Responsive Column Control (CRITICAL) ─────────── */
         @media (max-width: 992px) {{
-            /* On tablet/mobile, force columns to stack if they aren't already */
+            /* On tablet/mobile, force columns to stack */
             [data-testid="stHorizontalBlock"] {{
                 flex-direction: column !important;
                 gap: 2rem !important;
@@ -167,18 +167,25 @@ st.markdown(
                 width: 100% !important;
             }}
             
-            /* The Chat Panel (if open) should shift to an overlay feel or bottom stack */
-            .mobile-chat-overlay {{
+            /* Target the Chat Panel Column directly via its unique content */
+            [data-testid="stColumn"]:has(.st-key-btn_close_scholar_panel),
+            [data-testid="stColumn"]:has([data-testid="stChatInput"]) {{
                 position: fixed !important;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                top: 0;
-                z-index: 99999;
+                inset: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                z-index: 100000 !important;
                 background: #0F172A !important;
-                padding: 1rem;
-                overflow-y: auto;
+                padding: 1rem !important;
+                overflow-y: auto !important;
+                display: block !important;
+                animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             }}
+        }}
+
+        @keyframes slideUp {{
+            from {{ transform: translateY(100%); }}
+            to {{ transform: translateY(0); }}
         }}
 
         /* ── Buttons, Inputs & Micro-interactions ─────────── */
@@ -264,10 +271,26 @@ with col_main:
 
 if col_chat is not None:
     with col_chat:
-        st.html('<div class="mobile-chat-overlay">')
         # Scholar Agent chat panel
         render_chat_panel(ayahs)
-        st.html('</div>')
+
+# ── Global Scroll Lock for Mobile ────────────────────────────
+if show_chat:
+    st.html(
+        """
+        <style>
+        @media (max-width: 992px) {
+            /* Lock the background app view when chat is open on mobile */
+            [data-testid="stAppViewContainer"] {
+                overflow: hidden !important;
+                height: 100vh !important;
+                position: fixed !important;
+                width: 100% !important;
+            }
+        }
+        </style>
+        """
+    )
 
 # ── Sync URL Parameters (Smart Resume Persistence) ────────────
 # Pushing these to the URL bar allows browsers to intrinsically remember 

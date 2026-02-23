@@ -14,37 +14,68 @@ from rag.query import query_pdf
 
 
 def _render_chat_header():
-    """Render the Scholar Agent header."""
-    st.html(
-        f"""
-        <div style="
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0.75rem 1rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--glass-border);
-            border-radius: var(--sharp-radius) var(--sharp-radius) 0 0;
-            font-family: Inter, sans-serif;
-        ">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
+    """Render the Scholar Agent header with an integrated close button."""
+    
+    # Header Layout: Content + Close Button
+    col_head, col_close = st.columns([0.85, 0.15])
+    
+    with col_head:
+        st.html(
+            f"""
+            <div style="display: flex; align-items: center; gap: 0.75rem; font-family: Inter, sans-serif; padding: 0.2rem 0;">
                 <div style="
                     width: 2rem; height: 2rem; border-radius: 50%;
                     background-image: url('{get_logo_base64()}');
                     background-size: cover;
                     background-position: center;
                     border: 1.5px solid var(--gold);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
                 ">
                 </div>
                 <div>
                     <p style="font-size: 0.8rem; font-weight: 700; color: white; margin: 0; letter-spacing: 0.5px;">Scholar AI</p>
                     <span style="font-size: 0.55rem; color: #10b981; display: flex; align-items: center; gap: 0.25rem; font-weight: 600; text-transform: uppercase;">
-                        <span style="width: 5px; height: 5px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 5px #10b981;"></span>
+                        <span style="width: 5px; height: 5px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
                         {"Online" if GEMINI_API_KEY else "Config Required"}
                     </span>
                 </div>
             </div>
-        </div>
+            """
+        )
+    
+    with col_close:
+        # This button is intended for mobile but functional everywhere.
+        # We'll hide it on large screens via CSS in app.py or chat_panel.
+        if st.button("✕", key="btn_close_scholar_panel", help="Close Scholar Panel"):
+            st.session_state.show_scholar_agent = False
+            st.rerun()
+
+    # Style the column container to look like a header
+    st.html(
+        """
+        <style>
+        [data-testid="stHorizontalBlock"]:has(button[key="btn_close_scholar_panel"]) {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(12px) !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+            padding: 0.5rem 1rem !important;
+            margin-bottom: 1rem !important;
+        }
+        /* Mobile Close Button Styling */
+        .st-key-btn_close_scholar_panel button {
+            background: transparent !important;
+            border: none !important;
+            color: var(--gold) !important;
+            font-size: 1.2rem !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        /* Hide on Desktop */
+        @media (min-width: 993px) {
+            .st-key-btn_close_scholar_panel {
+                display: none !important;
+            }
+        }
+        </style>
         """
     )
 
