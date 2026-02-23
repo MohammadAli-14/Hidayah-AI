@@ -44,7 +44,7 @@ To run Hidayah AI locally:
 
 ## 🚀 Deployment (Streamlit Cloud)
 
-Hidayah AI is a optimized for one-click deployment to Streamlit Cloud:
+Hidayah AI is optimized for one-click deployment to Streamlit Cloud:
 
 1. Push your code to a GitHub repository.
 2. Connect your repo at [share.streamlit.io](https://share.streamlit.io).
