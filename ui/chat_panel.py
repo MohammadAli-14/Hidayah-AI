@@ -5,7 +5,7 @@ Renders the Scholar Agent right panel: chat history, input area, PDF upload, and
 
 import streamlit as st
 from datetime import datetime
-from utils.config import GOLD, GEMINI_API_KEY
+from utils.config import GOLD, GEMINI_API_KEY, get_logo_base64
 from agents.router import classify_intent
 from agents.scholar import get_scholar_response
 from rag.pdf_loader import extract_and_chunk
@@ -28,12 +28,13 @@ def _render_chat_header():
         ">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <div style="
-                    width: 2rem; height: 2rem; border-radius: 50%;
-                    background: linear-gradient(135deg, #6366f1, #a855f7);
-                    display: flex; align-items: center; justify-content: center;
-                    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+                    width: 2.2rem; height: 2.2rem; border-radius: 50%;
+                    background-image: url('{get_logo_base64()}');
+                    background-size: cover;
+                    background-position: center;
+                    border: 1px solid rgba(212,175,55,0.5);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                 ">
-                    <span style="color: white; font-size: 0.85rem;">🧠</span>
                 </div>
                 <div>
                     <p style="font-size: 0.85rem; font-weight: 700; color: white; margin: 0;">Scholar Agent</p>

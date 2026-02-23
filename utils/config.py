@@ -19,8 +19,8 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 # ── Model Tier Strategy ───────────────────────────────────────────
-MODEL_ROUTER = "gemini-2.5-flash-lite"       # Intent classification (fastest)
-MODEL_SCHOLAR = "gemini-2.5-pro"             # Scholarly chat & RAG answers (best reasoning)
+MODEL_ROUTER = "gemini-2.5-flash"            # Intent classification (fastest)
+MODEL_SCHOLAR = "gemini-2.5-flash"           # Scholarly chat & RAG answers (generous free tier)
 MODEL_EMBEDDING = "models/text-embedding-004"  # Vector embeddings for FAISS RAG
 
 # ── Design Tokens (from design.instructions.md) ──────────────────
@@ -58,6 +58,8 @@ AUDIO_MODES = [
     "Arabic (Mishary Rashid)",
     "Arabic + Urdu Translation",
     "Arabic + English Translation",
+    "Urdu Translation Only",
+    "English Translation Only",
 ]
 
 # ── 30 Juz Metadata ──────────────────────────────────────────────

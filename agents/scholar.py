@@ -89,5 +89,9 @@ def get_scholar_response(
 
         return response.text
 
+    except genai.errors.APIError as e:
+        if e.code == 429:
+            return "⚠️ **Scholar Agent is busy**. The Google Gemini API free-tier quota has been temporarily exhausted. Please wait a few moments and try again."
+        return f"⚠️ **API Error:** {str(e.message) if hasattr(e, 'message') else str(e)}"
     except Exception as e:
-        return f"⚠️ Scholar Agent error: {str(e)}"
+        return f"⚠️ **Scholar Agent error:** An unexpected error occurred. Please try again."

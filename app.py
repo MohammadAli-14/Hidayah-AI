@@ -293,7 +293,14 @@ current_ayah_index = st.session_state.get("current_ayah_index", 0)
 
 
 # ── Main Layout: Quran View (left) + Chat Panel (right) ──────
-col_main, col_chat = st.columns([3, 2])
+# ── Main Layout: Quran View (left) + Chat Panel (right) ──────
+show_chat = st.session_state.get("show_scholar_agent", False)
+
+if show_chat:
+    col_main, col_chat = st.columns([3, 2])
+else:
+    col_main = st.container()
+    col_chat = None
 
 with col_main:
     # Header
@@ -305,6 +312,15 @@ with col_main:
     # Audio player footer
     render_audio_player(ayahs, current_ayah_index)
 
-with col_chat:
-    # Scholar Agent chat panel
-    render_chat_panel(ayahs)
+if col_chat is not None:
+    with col_chat:
+        # Scholar Agent chat panel
+        render_chat_panel(ayahs)
+
+# ── Sync URL Parameters (Smart Resume Persistence) ────────────
+# Pushing these to the URL bar allows browsers to intrinsically remember 
+# the last read location via their history/autocomplete mechanisms without 
+# requiring a dedicated backend database.
+st.query_params["juz"] = st.session_state.get("current_juz", 1)
+st.query_params["ayah"] = st.session_state.get("current_ayah_index", 0)
+st.query_params["mode"] = st.session_state.get("audio_mode", "Arabic (Mishary Rashid)")

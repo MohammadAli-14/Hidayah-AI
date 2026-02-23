@@ -16,6 +16,28 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
     """
 
     if not ayahs:
+        last = st.session_state.get("last_ayah", 0)
+        resume_html = ""
+        if last > 0:
+            # We use a Streamlit button for actual interaction, so we close the HTML div,
+            # render the button, and then open another if needed.
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.html(
+                    """
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <p style="font-size: 2rem; margin-bottom: 0.5rem;">📖</p>
+                        <p style="color: #94a3b8; font-size: 1.1rem; font-family: Inter, sans-serif;">Select a Juz from the sidebar to begin reading</p>
+                        <div style="margin: 1.5rem 0; font-size: 0.85rem; color: #cbd5e1;">— OR —</div>
+                    </div>
+                    """
+                )
+                if st.button("► Resume Your Reading", key="main_resume_btn", use_container_width=True):
+                    st.session_state.current_ayah_index = last
+                    st.session_state.is_playing = True
+                    st.rerun()
+            return
+
         st.html(
             """
             <div style="

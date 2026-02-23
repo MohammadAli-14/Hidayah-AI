@@ -5,31 +5,24 @@ Renders the top header bar: Ramadan day counter, current Surah info, verse range
 
 import streamlit as st
 from datetime import date
-from utils.config import GOLD
+from utils.config import GOLD, get_logo_base64
 
 
-def _get_ramadan_day() -> str:
+def _get_ramadan_day(juz_num: int) -> str:
     """
-    Estimate the current Ramadan day.
-    Ramadan 2026 is estimated to start around Feb 18, 2026.
-    This is an approximation — real Islamic calendar depends on moon sighting.
+    Derive the Ramadan day from the currently selected Juz.
+    Since this is a 30-Day companion, Juz N naturally corresponds to Day N.
     """
-    ramadan_start = date(2026, 2, 18)
-    today = date.today()
-    delta = (today - ramadan_start).days + 1
-
-    if 1 <= delta <= 30:
-        return f"Ramadan Day {delta}"
-    elif delta < 1:
-        return "Pre-Ramadan"
-    else:
-        return "Post-Ramadan"
+    if 1 <= juz_num <= 30:
+        return f"Ramadan Day {juz_num}"
+    return "Ramadan 2026"
 
 
 def render_header(ayahs: list[dict], current_index: int = 0):
     """Render the top header bar with Surah info and Ramadan day."""
 
-    ramadan_day = _get_ramadan_day()
+    current_juz = st.session_state.get("current_juz", 1)
+    ramadan_day = _get_ramadan_day(current_juz)
 
     # Determine current surah and verse range from loaded ayahs
     if ayahs:
@@ -60,6 +53,7 @@ def render_header(ayahs: list[dict], current_index: int = 0):
             border-radius: 1rem 1rem 0 0;
             margin-bottom: 0;
             font-family: Inter, sans-serif;
+            min-height: 4rem;
         ">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <span style="
@@ -77,14 +71,60 @@ def render_header(ayahs: list[dict], current_index: int = 0):
                     font-family: 'Amiri', serif; font-size: 1rem; color: rgba(255,255,255,0.5); margin-left: 0.5rem;
                 ">{surah_arabic}</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span style="
-                    display: inline-flex; align-items: center; justify-content: center;
-                    width: 2rem; height: 2rem; border-radius: 50%;
-                    background: rgba(6,78,59,1); color: white; font-size: 0.65rem; font-weight: 700;
-                    box-shadow: 0 0 0 2px {GOLD}, 0 0 0 4px #0F172A;
-                ">HA</span>
+            <div style="display: flex; align-items: center; gap: 0.75rem; width: 2.5rem; height: 2.5rem;">
+                <!-- Placeholder for absolute placed Streamlit Button -->
             </div>
         </div>
         """
     )
+    
+    logo_b64 = get_logo_base64()
+    
+    st.markdown(
+        f"""
+        <style>
+        .scholar-toggle-anchor {{
+            position: relative;
+            width: 100%;
+            height: 0px;
+            overflow: visible;
+        }}
+        
+        button[title="Toggle Scholar Agent"] {{
+            position: absolute !important;
+            right: 1.5rem !important;
+            top: -3.85rem !important;
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            background-image: url('{logo_b64}') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            border: 2px solid {GOLD} !important;
+            color: transparent !important;
+            box-shadow: 0 0 0 2px #0F172A, 0 4px 10px rgba(0,0,0,0.5) !important;
+            z-index: 100 !important;
+            transition: all 0.2s ease !important;
+            background-color: transparent !important;
+        }}
+        
+        button[title="Toggle Scholar Agent"]:hover {{
+            transform: scale(1.08) !important;
+            box-shadow: 0 0 15px {GOLD}, 0 0 0 2px #0F172A !important;
+            border-color: #F3E5AB !important;
+        }}
+        
+        button[title="Toggle Scholar Agent"] p {{
+            display: none !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    with st.container():
+        st.markdown('<div class="scholar-toggle-anchor"></div>', unsafe_allow_html=True)
+        if st.button("HA", help="Toggle Scholar Agent", key="btn_toggle_scholar_header", use_container_width=False):
+            st.session_state.show_scholar_agent = not st.session_state.show_scholar_agent
+            st.rerun()

@@ -12,11 +12,16 @@ def _build_playlist(ayahs: list[dict], audio_mode: str) -> list[dict]:
     playlist = []
     
     for i, a in enumerate(ayahs):
-        urls = [a.get("audio_url", "")]
-        if audio_mode == "Arabic + English Translation" and a.get("audio_en"):
-            urls.append(a.get("audio_en"))
-        elif audio_mode == "Arabic + Urdu Translation" and a.get("audio_ur"):
-            urls.append(a.get("audio_ur"))
+        if audio_mode == "Urdu Translation Only":
+            urls = [a.get("audio_ur", "")] if a.get("audio_ur") else []
+        elif audio_mode == "English Translation Only":
+            urls = [a.get("audio_en", "")] if a.get("audio_en") else []
+        else:
+            urls = [a.get("audio_url", "")]
+            if audio_mode == "Arabic + English Translation" and a.get("audio_en"):
+                urls.append(a.get("audio_en"))
+            elif audio_mode == "Arabic + Urdu Translation" and a.get("audio_ur"):
+                urls.append(a.get("audio_ur"))
             
         playlist.append({
             "idx": i,

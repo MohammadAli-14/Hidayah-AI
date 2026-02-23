@@ -7,19 +7,34 @@ import streamlit as st
 
 
 def init_session_state():
-    """Initialize all session state defaults if not already set."""
+    """Initialize all session state defaults. Reads from URL parameters if available."""
+    
+    # 1. Parse existing URL parameters (if any)
+    qp = st.query_params
+    q_juz = qp.get("juz")
+    q_ayah = qp.get("ayah")
+    q_mode = qp.get("mode")
+
+    initial_juz = int(q_juz) if q_juz and q_juz.isdigit() else 1
+    if not (1 <= initial_juz <= 30):
+        initial_juz = 1
+
+    initial_ayah = int(q_ayah) if q_ayah and q_ayah.isdigit() else 0
+    from utils.config import AUDIO_MODES
+    initial_mode = q_mode if q_mode in AUDIO_MODES else "Arabic (Mishary Rashid)"
+
     defaults = {
         # Navigation
-        "current_juz": 1,
-        "current_ayah_index": 0,
-        "last_ayah": 0,
+        "current_juz": initial_juz,
+        "current_ayah_index": initial_ayah,
+        "last_ayah": initial_ayah,
         "_loaded_juz": None,
 
         # Quran data cache
         "ayahs": [],
 
         # Audio
-        "audio_mode": "Arabic (Mishary Rashid)",
+        "audio_mode": initial_mode,
         "is_playing": False,
 
         # Chat
@@ -34,6 +49,7 @@ def init_session_state():
 
         # UI
         "show_settings": False,
+        "show_scholar_agent": False,
     }
 
     for key, value in defaults.items():
