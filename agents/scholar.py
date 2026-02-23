@@ -43,7 +43,7 @@ def get_scholar_response(
     """
     client = get_gemini_client()
     if not client:
-        return "⚠️ Gemini API key not configured. Please add GEMINI_API_KEY to your .env file."
+        return "⚠️ **Gemini API key not configured.** Please add `GEMINI_API_KEY` to your settings (Secrets on Streamlit Cloud or .env locally)."
 
     try:
         print(f"📖 [SCHOLAR] Assembling context. Intent: {intent}")

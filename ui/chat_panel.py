@@ -205,7 +205,7 @@ def render_chat_panel(ayahs: list[dict]):
                         st.session_state.uploaded_pdf_name = uploaded_file.name
                         st.success(f"✅ PDF loaded: {uploaded_file.name} ({len(chunks)} chunks indexed)")
                     else:
-                        st.error("❌ Embedding failed. Check your GEMINI_API_KEY in .env.")
+                        st.error("❌ Embedding failed. Check your `GEMINI_API_KEY` in your configuration (Secrets or .env).")
                 else:
                     st.error("❌ Failed to extract text from PDF.")
 

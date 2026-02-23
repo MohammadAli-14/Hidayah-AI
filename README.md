@@ -49,7 +49,18 @@ Hidayah AI is optimized for one-click deployment to Streamlit Cloud:
 1. Push your code to a GitHub repository.
 2. Connect your repo at [share.streamlit.io](https://share.streamlit.io).
 3. Set your `app.py` as the main entry point.
-4. **Crucial:** Add your `GEMINI_API_KEY` and `TAVILY_API_KEY` to the Streamlit "Secrets" section in the dashboard.
+
+### 🔑 Configuring Secrets (Production)
+Since Streamlit Cloud does not read local `.env` files for security reasons, you must use the **Secrets** feature:
+
+1. Open your app dashboard on Streamlit Cloud.
+2. Click on **Settings** > **Secrets**.
+3. Paste the following into the text area (replace with your real keys):
+   ```toml
+   GEMINI_API_KEY = "your_actual_gemini_key_here"
+   TAVILY_API_KEY = "your_actual_tavily_key_here"
+   ```
+4. Click **Save**. The app will automatically reboot with the new keys active!
 
 ---
 

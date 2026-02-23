@@ -12,8 +12,25 @@ from google import genai
 # ── Load Environment ──────────────────────────────────────────────
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
+def get_secret(key: str, default: str = "") -> str:
+    """Resolve secret from environment or Streamlit secrets."""
+    # 1. Try OS Environment (Local .env)
+    val = os.getenv(key)
+    if val:
+        return val
+    
+    # 2. Try Streamlit Secrets (Production)
+    try:
+        import streamlit as st
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+        
+    return default
+
+GEMINI_API_KEY = get_secret("GEMINI_API_KEY")
+TAVILY_API_KEY = get_secret("TAVILY_API_KEY")
 
 # Configure Gemini client globally
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
