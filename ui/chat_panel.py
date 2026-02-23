@@ -49,8 +49,50 @@ def _render_chat_header():
     )
 
 
+def _render_error_message(content: str, timestamp: str):
+    """Render a premium error message bubble."""
+    # Strip the prefix for display
+    display_content = content.replace("⚠️", "").strip()
+    
+    st.html(
+        f"""
+        <div class="animate-reveal" style="margin-bottom: 1.25rem; font-family: Inter, sans-serif; display: flex; flex-direction: column; align-items: center;">
+            <div style="
+                background: rgba(212, 175, 55, 0.08);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(212, 175, 55, 0.3);
+                padding: 1rem 1.25rem;
+                border-radius: var(--sharp-radius);
+                max-width: 95%;
+                display: flex;
+                gap: 1rem;
+                align-items: flex-start;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            ">
+                <div style="color: var(--gold); margin-top: 0.2rem;">
+                    <span class="material-icons-round" style="font-size: 1.2rem;">warning_amber</span>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.85rem; line-height: 1.6; color: #fef3c7; font-weight: 500;">
+                        {display_content}
+                    </p>
+                    <p style="margin: 0.4rem 0 0 0; font-size: 0.6rem; color: rgba(254, 243, 199, 0.5); text-transform: uppercase; letter-spacing: 0.5px;">
+                        System Update • {timestamp}
+                    </p>
+                </div>
+            </div>
+        </div>
+        """
+    )
+
+
 def _render_message(role: str, content: str, timestamp: str, intent_badge: str = ""):
     """Render a single chat message bubble."""
+
+    # Route to error renderer if content starts with the error prefix
+    if content.startswith("⚠️"):
+        _render_error_message(content, timestamp)
+        return
 
     if role == "assistant":
         st.html(
@@ -218,14 +260,16 @@ def render_chat_panel(ayahs: list[dict]):
                 chunks = extract_and_chunk(uploaded_file)
                 if chunks:
                     index, embeddings = build_index(chunks)
-                    if index is not None:
+                    if isinstance(index, str) and "⚠️ 429" in index:
+                        st.error("⚠️ **Scholar Agent is currently resting.** Hidayah AI is receiving a high volume of requests. Please wait a moment and try again.")
+                    elif index is not None:
                         st.session_state.faiss_index = index
                         st.session_state.pdf_chunks = chunks
                         st.session_state.pdf_embeddings = embeddings
                         st.session_state.uploaded_pdf_name = uploaded_file.name
                         st.success(f"✅ PDF loaded: {uploaded_file.name} ({len(chunks)} chunks indexed)")
                     else:
-                        st.error("❌ Embedding failed. Check your `GEMINI_API_KEY` in your configuration (Secrets or .env).")
+                        st.error("❌ Embedding failed. Please check your connection and try again.")
                 else:
                     st.error("❌ Failed to extract text from PDF.")
 

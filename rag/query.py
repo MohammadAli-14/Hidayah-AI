@@ -47,6 +47,9 @@ def query_pdf(
     # Retrieve relevant chunks
     relevant_chunks = search_index(question, index, chunks, top_k)
 
+    if isinstance(relevant_chunks, str) and "⚠️ 429" in relevant_chunks:
+        return "⚠️ **Scholar Agent is currently resting.** Hidayah AI is receiving a high volume of requests. Please wait a moment and try again."
+
     if not relevant_chunks:
         return "I couldn't find relevant information in the uploaded PDF for your question. Please try rephrasing."
 
@@ -80,5 +83,9 @@ Provide a thorough, well-structured answer based strictly on the PDF content abo
 
         return response.text
 
+    except genai.errors.APIError as e:
+        if e.code == 429:
+            return "⚠️ **Scholar Agent is currently resting.** Hidayah AI is receiving a high volume of requests. Please wait a moment and try again."
+        return f"⚠️ **RAG API Error:** {str(e.message) if hasattr(e, 'message') else str(e)}"
     except Exception as e:
-        return f"⚠️ RAG query error: {str(e)}"
+        return f"⚠️ **RAG query error:** An unexpected error occurred. Please try again."

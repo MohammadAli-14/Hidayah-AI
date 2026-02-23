@@ -45,6 +45,11 @@ def embed_texts(texts: list[str], task_type: str = "retrieval_document") -> np.n
 
         return np.array(embeddings, dtype=np.float32)
 
+    except genai.errors.APIError as e:
+        if e.code == 429:
+            return "⚠️ 429"
+        print(f"[VectorStore] Embedding API error: {e}")
+        return None
     except Exception as e:
         print(f"[VectorStore] Embedding error: {e}")
         return None
@@ -64,6 +69,8 @@ def build_index(chunks: list[str]):
         return None, None
 
     embeddings = embed_texts(chunks, task_type="retrieval_document")
+    if isinstance(embeddings, str) and "⚠️ 429" in embeddings:
+        return "⚠️ 429", None
     if embeddings is None:
         return None, None
 
@@ -107,6 +114,8 @@ def search_index(query: str, index, chunks: list[str], top_k: int = 5) -> list[s
         return []
 
     query_embedding = embed_texts([query], task_type="retrieval_query")
+    if isinstance(query_embedding, str) and "⚠️ 429" in query_embedding:
+        return "⚠️ 429"
     if query_embedding is None:
         return []
 
