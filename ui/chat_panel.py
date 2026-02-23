@@ -111,7 +111,8 @@ def _process_query(query: str, ayahs: list[dict]):
     })
 
     # Classify intent
-    intent = classify_intent(query)
+    active_pdf_name = st.session_state.get("uploaded_pdf_name")
+    intent = classify_intent(query, active_pdf_name=active_pdf_name)
 
     # Map intent to human-readable badge
     badge_map = {

@@ -12,12 +12,15 @@ def search_web(query: str, max_results: int = 5) -> list[dict]:
     Returns a list of result dicts: [{"title": ..., "url": ..., "content": ...}, ...]
     """
     if not TAVILY_API_KEY:
+        print("❌ [TAVILY] API Key Missing - Bypassing web search.")
         return [{"title": "API Key Missing", "url": "", "content": "Tavily API key not configured. Please add TAVILY_API_KEY to your .env file."}]
 
     try:
         from tavily import TavilyClient
 
         client = TavilyClient(api_key=TAVILY_API_KEY)
+        
+        print(f"🌍 [TAVILY] Searching web for: '{query}'")
         response = client.search(
             query=query,
             search_depth="advanced",
@@ -43,7 +46,9 @@ def search_web(query: str, max_results: int = 5) -> list[dict]:
                 "content": item.get("content", ""),
             })
 
+        print(f"✅ [TAVILY] Found {len(results)} distinct sources.")
         return results
 
     except Exception as e:
+        print(f"❌ [TAVILY] Search failed: {e}")
         return [{"title": "Search Error", "url": "", "content": f"Web search failed: {str(e)}"}]

@@ -21,7 +21,7 @@ client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 # ── Model Tier Strategy ───────────────────────────────────────────
 MODEL_ROUTER = "gemini-2.5-flash"            # Intent classification (fastest)
 MODEL_SCHOLAR = "gemini-2.5-flash"           # Scholarly chat & RAG answers (generous free tier)
-MODEL_EMBEDDING = "models/text-embedding-004"  # Vector embeddings for FAISS RAG
+MODEL_EMBEDDING = "gemini-embedding-001"     # Vector embeddings for FAISS RAG
 
 # ── Design Tokens (from design.instructions.md) ──────────────────
 MIDNIGHT_BLUE = "#1a2a40"

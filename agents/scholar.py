@@ -46,6 +46,7 @@ def get_scholar_response(
         return "⚠️ Gemini API key not configured. Please add GEMINI_API_KEY to your .env file."
 
     try:
+        print(f"📖 [SCHOLAR] Assembling context. Intent: {intent}")
         # Build context based on intent
         context_parts = []
 
@@ -77,6 +78,7 @@ def get_scholar_response(
             context_str = "\n\n---\n\n".join(context_parts)
             full_prompt = f"Context:\n{context_str}\n\n---\n\nUser Question: {query}"
 
+        print(f"🧠 [SCHOLAR] Sending final prompt to {MODEL_SCHOLAR} (Context parts: {len(context_parts)})...")
         response = client.models.generate_content(
             model=MODEL_SCHOLAR,
             contents=full_prompt,
@@ -87,6 +89,10 @@ def get_scholar_response(
             ),
         )
 
+        if not response.text:
+            return "⚠️ **Scholar Agent error:** The model returned an empty response. This might be due to safety filters or a temporary connection issue."
+
+        print("✨ [SCHOLAR] Response generated successfully.")
         return response.text
 
     except genai.errors.APIError as e:
