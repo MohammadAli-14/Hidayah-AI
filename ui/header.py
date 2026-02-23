@@ -93,17 +93,17 @@ def render_header(ayahs: list[dict], current_index: int = 0):
         button[title="Toggle Scholar Agent"] {{
             position: absolute !important;
             right: 1.5rem !important;
-            top: -3.85rem !important;
-            width: 2.5rem !important;
-            height: 2.5rem !important;
+            top: -3.2rem !important;
+            width: 2.2rem !important;
+            height: 2.2rem !important;
             padding: 0 !important;
             border-radius: 50% !important;
             background-image: url('{logo_b64}') !important;
             background-size: cover !important;
             background-position: center !important;
-            border: 2px solid {GOLD} !important;
+            border: 2px solid var(--gold) !important;
             color: transparent !important;
-            box-shadow: 0 0 0 2px #0F172A, 0 4px 10px rgba(0,0,0,0.5) !important;
+            box-shadow: 0 0 0 2px var(--bg-dark), 0 4px 10px rgba(0,0,0,0.5) !important;
             z-index: 100 !important;
             transition: all 0.2s ease !important;
             background-color: transparent !important;

@@ -74,59 +74,68 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
         surah_name = ayah.get("surah_name", "")
 
         rows_html += f"""
-        <div style="
-            display: flex; border-bottom: 1px solid rgba(148,163,184,0.1);
-            min-height: 120px; position: relative;
+        <div class="verse-row" style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid rgba(148,163,184,0.08);
+            position: relative;
+            transition: all 0.4s ease;
         ">
             <!-- Arabic Pane (Left) -->
-            <div style="
-                width: 50%; padding: 1.5rem 2rem;
+            <div class="arabic-pane" style="
+                padding: 2rem;
                 display: flex; align-items: center; justify-content: center;
-                border-right: 1px solid rgba(148,163,184,0.1);
-                background: rgba(255,255,255,0.02);
+                border-right: 1px solid rgba(148,163,184,0.08);
+                background: rgba(255,255,255,0.01);
                 {playing_border_rtl}
             ">
                 <div style="text-align: center; width: 100%;">
                     <p style="
-                        font-family: 'Amiri', serif; font-size: 1.7rem; line-height: 2.2;
-                        color: #e2e8f0; direction: rtl; text-align: center;
-                        margin: 0;
+                        font-family: 'Amiri', serif; font-size: 1.85rem; line-height: 2.3;
+                        color: #f8fafc; direction: rtl; text-align: center;
+                        margin: 0; text-shadow: 0 4px 20px rgba(0,0,0,0.3);
                     ">{ayah.get('arabic', '')}</p>
-                    <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:0.5rem;">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:1rem;">
                         <span style="
                             display:inline-flex; align-items:center; justify-content:center;
-                            min-width: 1.5rem; height: 1.5rem; border-radius: 50%;
-                            border: 1px solid rgba(212,175,55,0.3); color: {GOLD};
-                            font-size: 0.65rem; font-weight: 600;
+                            min-width: 1.8rem; height: 1.8rem;
+                            border: 1px solid var(--gold); color: var(--gold);
+                            font-size: 0.7rem; font-weight: 700;
+                            border-radius: var(--sharp-radius);
+                            background: rgba(212,175,55,0.05);
                         ">{ayah_num}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Translation Pane (Right) -->
-            <div style="
-                width: 50%; padding: 1.5rem 2rem;
+            <div class="translation-pane" style="
+                padding: 2rem;
                 display: flex; flex-direction: column; justify-content: center;
-                background: rgba(26,42,64,0.3);
+                background: rgba(26,42,64,0.2);
                 {playing_border}
             ">
-                <span style="
-                    color: {GOLD}; font-size: 0.65rem; font-weight: 700;
-                    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
-                ">English Translation</span>
-                <p style="
-                    font-family: 'Playfair Display', serif; font-size: 1rem; line-height: 1.7;
-                    color: #cbd5e1; margin: 0 0 1rem 0;
-                ">{ayah.get('english', '')}</p>
+                <div style="margin-bottom: 1.5rem;">
+                    <span style="
+                        color: var(--gold); font-size: 0.6rem; font-weight: 700;
+                        text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.7;
+                    ">English</span>
+                    <p style="
+                        font-family: 'Playfair Display', serif; font-size: 1.05rem; line-height: 1.8;
+                        color: #cbd5e1; margin: 0.25rem 0 0 0;
+                    ">{ayah.get('english', '')}</p>
+                </div>
 
-                <span style="
-                    color: {GOLD}; font-size: 0.65rem; font-weight: 700;
-                    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
-                ">Urdu Translation</span>
-                <p style="
-                    font-family: 'Amiri', serif; font-size: 1rem; line-height: 1.9;
-                    color: #94a3b8; direction: rtl; text-align: right; margin: 0;
-                ">{ayah.get('urdu', '')}</p>
+                <div>
+                    <span style="
+                        color: var(--gold); font-size: 0.6rem; font-weight: 700;
+                        text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.7;
+                    ">Urdu</span>
+                    <p style="
+                        font-family: 'Amiri', serif; font-size: 1.15rem; line-height: 2;
+                        color: #94a3b8; direction: rtl; text-align: right; margin: 0.25rem 0 0 0;
+                    ">{ayah.get('urdu', '')}</p>
+                </div>
             </div>
         </div>
         """
@@ -134,11 +143,19 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
     # Wrap in the glass panel container with arabesque background
     st.html(
         f"""
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+        <style>
+            @media (max-width: 992px) {{
+                .verse-row {{
+                    grid-template-columns: 1fr !important;
+                }}
+                .arabic-pane {{
+                    border-right: none !important;
+                    border-bottom: 1px solid rgba(148,163,184,0.08) !important;
+                }}
+            }}
+        </style>
         <div style="
-            border-radius: 1rem;
+            border-radius: var(--sharp-radius);
             background: rgba(26, 42, 64, 0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(148,163,184,0.1);

@@ -20,27 +20,27 @@ def _render_chat_header():
         <div style="
             display: flex; align-items: center; justify-content: space-between;
             padding: 0.75rem 1rem;
-            background: rgba(26, 42, 64, 0.5);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(148,163,184,0.15);
-            border-radius: 1rem 1rem 0 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            border-radius: var(--sharp-radius) var(--sharp-radius) 0 0;
             font-family: Inter, sans-serif;
         ">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <div style="
-                    width: 2.2rem; height: 2.2rem; border-radius: 50%;
+                    width: 2rem; height: 2rem; border-radius: 50%;
                     background-image: url('{get_logo_base64()}');
                     background-size: cover;
                     background-position: center;
-                    border: 1px solid rgba(212,175,55,0.5);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    border: 1.5px solid var(--gold);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
                 ">
                 </div>
                 <div>
-                    <p style="font-size: 0.85rem; font-weight: 700; color: white; margin: 0;">Scholar Agent</p>
-                    <span style="font-size: 0.6rem; color: #10b981; display: flex; align-items: center; gap: 0.25rem;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
-                        {"Online" if GEMINI_API_KEY else "API Key Required"}
+                    <p style="font-size: 0.8rem; font-weight: 700; color: white; margin: 0; letter-spacing: 0.5px;">Scholar AI</p>
+                    <span style="font-size: 0.55rem; color: #10b981; display: flex; align-items: center; gap: 0.25rem; font-weight: 600; text-transform: uppercase;">
+                        <span style="width: 5px; height: 5px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 5px #10b981;"></span>
+                        {"Online" if GEMINI_API_KEY else "Config Required"}
                     </span>
                 </div>
             </div>
@@ -55,19 +55,20 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
     if role == "assistant":
         st.html(
             f"""
-            <div style="margin-bottom: 1rem; font-family: Inter, sans-serif;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; margin-left: 0.25rem;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: {GOLD};">Hidayah AI</span>
-                    <span style="font-size: 0.65rem; color: #64748b;">{timestamp}</span>
-                    {f'<span style="font-size:0.55rem; color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:0.1rem 0.4rem; border-radius:1rem; background:rgba(16,185,129,0.1);">{intent_badge}</span>' if intent_badge else ''}
+            <div class="animate-reveal" style="margin-bottom: 1.25rem; font-family: Inter, sans-serif;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; margin-left: 0.25rem;">
+                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;">Hidayah AI</span>
+                    <span style="font-size: 0.6rem; color: #64748b;">{timestamp}</span>
+                    {f'<span style="font-size:0.55rem; color:#10b981; border:1px solid rgba(16,185,129,0.3); padding:0.1rem 0.5rem; border-radius: var(--sharp-radius); background:rgba(16,185,129,0.05); font-weight:700;">{intent_badge}</span>' if intent_badge else ''}
                 </div>
                 <div style="
-                    background: rgba(30, 41, 59, 0.8);
-                    border: 1px solid rgba(148,163,184,0.15);
-                    padding: 0.75rem 1rem;
-                    border-radius: 1rem; border-top-left-radius: 0.25rem;
-                    font-size: 0.85rem; line-height: 1.6; color: #cbd5e1;
+                    background: rgba(30, 41, 59, 0.4);
+                    border: 1px solid var(--glass-border);
+                    padding: 0.85rem 1.1rem;
+                    border-radius: var(--sharp-radius);
+                    font-size: 0.85rem; line-height: 1.7; color: #cbd5e1;
                     max-width: 95%;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
                 ">
                     {content}
                 </div>
@@ -77,17 +78,17 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
     else:
         st.html(
             f"""
-            <div style="margin-bottom: 1rem; display: flex; flex-direction: column; align-items: flex-end; font-family: Inter, sans-serif;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; margin-right: 0.25rem;">
-                    <span style="font-size: 0.7rem; color: #94a3b8;">You</span>
-                    <span style="font-size: 0.65rem; color: #64748b;">{timestamp}</span>
+            <div class="animate-reveal" style="margin-bottom: 1.25rem; display: flex; flex-direction: column; align-items: flex-end; font-family: Inter, sans-serif;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; margin-right: 0.25rem;">
+                    <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">YOU</span>
+                    <span style="font-size: 0.6rem; color: #64748b;">{timestamp}</span>
                 </div>
                 <div style="
-                    background: rgba(212,175,55,0.15);
-                    border: 1px solid rgba(212,175,55,0.25);
-                    padding: 0.75rem 1rem;
-                    border-radius: 1rem; border-top-right-radius: 0.25rem;
-                    font-size: 0.85rem; line-height: 1.6; color: #e2e8f0;
+                    background: rgba(212, 175, 55, 0.08);
+                    border: 1px solid rgba(212, 175, 55, 0.2);
+                    padding: 0.85rem 1.1rem;
+                    border-radius: var(--sharp-radius);
+                    font-size: 0.85rem; line-height: 1.7; color: #e2e8f0;
                     max-width: 90%;
                 ">
                     {content}
@@ -154,6 +155,25 @@ def render_chat_panel(ayahs: list[dict]):
     _render_chat_header()
 
     # ── Chat Input (placed FIRST so it's always visible) ──────
+    st.markdown(
+        """
+        <style>
+        [data-testid="stChatInput"] {
+            border: 1px solid var(--gold) !important;
+            border-radius: var(--sharp-radius) !important;
+            background: rgba(15, 23, 42, 0.9) !important;
+            backdrop-filter: blur(10px) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            margin-bottom: 1.5rem !important;
+        }
+        [data-testid="stChatInput"] textarea {
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.9rem !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
     query = st.chat_input(
         placeholder="Ask about this verse, research, or query your PDF...",
         key="scholar_chat_input",
@@ -164,7 +184,7 @@ def render_chat_panel(ayahs: list[dict]):
         st.rerun()
 
     # ── Chat History ──────────────────────────────────────────
-    chat_container = st.container(height=380)
+    chat_container = st.container(height=420)
 
     with chat_container:
         if not st.session_state.chat_history:
@@ -185,12 +205,12 @@ def render_chat_panel(ayahs: list[dict]):
                 )
 
     # ── PDF Upload (collapsible) ──────────────────────────────
-    with st.expander("📎 Upload Scholarly PDF", expanded=False):
+    with st.expander("📎 Research PDF Analysis", expanded=False):
         uploaded_file = st.file_uploader(
             "Upload scholarly PDF",
             type=["pdf"],
             key="pdf_uploader",
-            label_visibility="collapsed",
+            label_visibility="visible",
         )
 
         if uploaded_file and uploaded_file.name != st.session_state.get("uploaded_pdf_name"):

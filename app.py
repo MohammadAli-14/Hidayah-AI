@@ -44,9 +44,24 @@ st.markdown(
 st.markdown(
     f"""
     <style>
+        /* ── Design Tokens & Variables ────────────────────── */
+        :root {{
+            --gold: #D4AF37;
+            --gold-light: #F3E5AB;
+            --bg-dark: #0F172A;
+            --glass-bg: rgba(26, 42, 64, 0.7);
+            --glass-border: rgba(148, 163, 184, 0.15);
+            --sharp-radius: 2px;
+            --premium-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }}
+
         /* ── Global Reset & Theme ─────────────────────────── */
         .stApp {{
-            background-color: {BG_DARK};
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(26, 42, 64, 1) 0%, rgba(15, 23, 42, 1) 100%),
+                url('https://www.transparenttextures.com/patterns/noise-lines.png');
+            background-blur: 100px;
             color: #e2e8f0;
             font-family: 'Inter', sans-serif;
         }}
@@ -57,216 +72,152 @@ st.markdown(
         .stDeployButton {{display: none;}}
         [data-testid="stDecoration"] {{display: none !important;}}
 
-        /* Transparent top header — keeps sidebar toggle visible */
+        /* Transparent top header */
         [data-testid="stHeader"] {{
             background: transparent !important;
         }}
 
-        /* ── Sidebar Toggle (hamburger) when sidebar is collapsed ─── */
+        /* ── Sidebar Toggle (hamburger) ─── */
         [data-testid="collapsedControl"] {{
             visibility: visible !important;
             display: flex !important;
             position: fixed !important;
-            top: 0.6rem !important;
-            left: 0.6rem !important;
+            top: 0.75rem !important;
+            left: 0.75rem !important;
             z-index: 999999 !important;
         }}
         [data-testid="collapsedControl"] button {{
-            background: rgba(26, 42, 64, 0.95) !important;
+            background: rgba(26, 42, 64, 0.9) !important;
             border: 1px solid rgba(212, 175, 55, 0.4) !important;
-            color: {GOLD} !important;
-            border-radius: 0.6rem !important;
-            width: 2.4rem !important;
-            height: 2.4rem !important;
+            color: var(--gold) !important;
+            border-radius: var(--sharp-radius) !important;
+            width: 2.5rem !important;
+            height: 2.5rem !important;
             padding: 0 !important;
             backdrop-filter: blur(12px) !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
-            transition: all 0.25s ease !important;
+            box-shadow: var(--premium-shadow) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }}
         [data-testid="collapsedControl"] button:hover {{
-            background: rgba(212, 175, 55, 0.15) !important;
-            border-color: {GOLD} !important;
-            box-shadow: 0 2px 16px rgba(212, 175, 55, 0.25) !important;
-        }}
-        [data-testid="collapsedControl"] button svg {{
-            stroke: {GOLD} !important;
-            width: 1.2rem !important;
-            height: 1.2rem !important;
+            transform: translateY(-1px);
+            background: rgba(212, 175, 55, 0.1) !important;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2) !important;
         }}
 
-        /* ── Sidebar Close (X) button inside the sidebar ─────── */
+        /* ── Sidebar Close (X) button ─────── */
         [data-testid="stSidebarCollapse"] {{
             position: absolute !important;
-            top: 0.5rem !important;
-            right: 0.5rem !important;
+            top: 0.75rem !important;
+            right: 0.75rem !important;
             z-index: 10 !important;
         }}
         [data-testid="stSidebarCollapse"] button {{
             background: rgba(15, 23, 42, 0.6) !important;
-            border: 1px solid rgba(212, 175, 55, 0.25) !important;
-            color: {GOLD} !important;
-            border-radius: 0.5rem !important;
-            width: 2rem !important;
-            height: 2rem !important;
-            padding: 0 !important;
-            transition: all 0.25s ease !important;
-        }}
-        [data-testid="stSidebarCollapse"] button:hover {{
-            background: rgba(212, 175, 55, 0.15) !important;
-            border-color: {GOLD} !important;
-        }}
-        [data-testid="stSidebarCollapse"] button svg {{
-            stroke: {GOLD} !important;
-            width: 1rem !important;
-            height: 1rem !important;
+            border: 1px solid rgba(212, 175, 55, 0.2) !important;
+            color: var(--gold) !important;
+            border-radius: var(--sharp-radius) !important;
+            transition: all 0.2s ease !important;
         }}
 
-        /* Reduce top padding */
+        /* ── Main Container Padding ───────────────────────── */
         .block-container {{
             padding-top: 1rem !important;
-            padding-bottom: 0 !important;
+            padding-bottom: 2rem !important;
+            max-width: 95rem !important;
         }}
 
         /* ── Sidebar Styling ───────────────────────────────── */
         [data-testid="stSidebar"] {{
-            background: rgba(26, 42, 64, 0.95) !important;
-            backdrop-filter: blur(12px);
-            border-right: 1px solid rgba(148, 163, 184, 0.1);
-            transition: margin-left 0.3s ease, visibility 0.3s ease !important;
+            background: rgba(15, 23, 42, 0.98) !important;
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(148, 163, 184, 0.05);
         }}
-
         [data-testid="stSidebar"] [data-testid="stSidebarContent"] {{
-            padding-top: 2.5rem !important;
+            padding-top: 3.5rem !important;
         }}
 
-        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
-            color: #cbd5e1;
-        }}
-
-        /* Sidebar buttons */
-        [data-testid="stSidebar"] button {{
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 1px solid rgba(148, 163, 184, 0.1) !important;
-            color: #94a3b8 !important;
-            border-radius: 0.75rem !important;
-            text-align: left !important;
-            padding: 0.5rem 0.75rem !important;
-            transition: all 0.2s ease !important;
-            font-size: 0.85rem !important;
-        }}
-
-        [data-testid="stSidebar"] button:hover {{
-            background: rgba(255, 255, 255, 0.08) !important;
-            border-color: rgba(212, 175, 55, 0.3) !important;
-            color: #e2e8f0 !important;
-        }}
-
-        /* ── Selectbox Styling ─────────────────────────────── */
-        [data-testid="stSidebar"] .stSelectbox > div > div {{
-            background: rgba(15, 23, 42, 0.8) !important;
-            border: 1px solid rgba(148, 163, 184, 0.2) !important;
-            color: #cbd5e1 !important;
-            border-radius: 0.5rem !important;
-        }}
-
-        /* ── Main Area Buttons ─────────────────────────────── */
-        .stButton > button {{
-            background: rgba(26, 42, 64, 0.7) !important;
-            border: 1px solid rgba(148, 163, 184, 0.15) !important;
-            color: #cbd5e1 !important;
-            border-radius: 0.5rem !important;
-            font-size: 0.8rem !important;
-            transition: all 0.2s ease !important;
-        }}
-
-        .stButton > button:hover {{
-            background: rgba(212, 175, 55, 0.15) !important;
-            border-color: rgba(212, 175, 55, 0.3) !important;
-            color: {GOLD} !important;
-        }}
-
-        /* ── Chat Input Styling ────────────────────────────── */
-        [data-testid="stChatInput"] {{
-            background: rgba(15, 23, 42, 0.8) !important;
-            border: 1px solid rgba(148, 163, 184, 0.15) !important;
-            border-radius: 0.75rem !important;
-        }}
-
-        [data-testid="stChatInput"] textarea {{
-            color: #e2e8f0 !important;
-        }}
-
-        /* ── File Uploader ─────────────────────────────────── */
-        [data-testid="stFileUploader"] {{
-            background: rgba(26, 42, 64, 0.5) !important;
-            border: 1px dashed rgba(148, 163, 184, 0.2) !important;
-            border-radius: 0.75rem !important;
-            padding: 0.5rem !important;
-        }}
-
-        [data-testid="stFileUploader"] label {{
-            color: #94a3b8 !important;
-            font-size: 0.75rem !important;
-        }}
-
-        /* ── Scrollbar ─────────────────────────────────────── */
-        ::-webkit-scrollbar {{
-            width: 8px;
-            height: 8px;
-        }}
-        ::-webkit-scrollbar-track {{
-            background: rgba(255, 255, 255, 0.03);
-        }}
-        ::-webkit-scrollbar-thumb {{
-            background: rgba(212, 175, 55, 0.25);
-            border-radius: 4px;
-        }}
-        ::-webkit-scrollbar-thumb:hover {{
-            background: rgba(212, 175, 55, 0.45);
-        }}
-
-        /* ── Glass Panel Utility ───────────────────────────── */
+        /* ── Premium Glass Panels ─────────────────────────── */
         .glass-panel {{
-            background: rgba(26, 42, 64, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--sharp-radius);
+            box-shadow: var(--premium-shadow);
+            position: relative;
+            overflow: hidden;
+        }}
+        .glass-panel::before {{
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url('https://www.transparenttextures.com/patterns/noise-lines.png');
+            opacity: 0.05;
+            pointer-events: none;
         }}
 
-        /* ── Gold Gradient Text ────────────────────────────── */
-        .gold-gradient-text {{
-            background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #D4AF37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* ── Responsive Column Control (CRITICAL) ─────────── */
+        @media (max-width: 992px) {{
+            /* On tablet/mobile, force columns to stack if they aren't already */
+            [data-testid="stHorizontalBlock"] {{
+                flex-direction: column !important;
+                gap: 2rem !important;
+            }}
+            [data-testid="stColumn"] {{
+                width: 100% !important;
+            }}
+            
+            /* The Chat Panel (if open) should shift to an overlay feel or bottom stack */
+            .mobile-chat-overlay {{
+                position: fixed !important;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: 0;
+                z-index: 99999;
+                background: #0F172A !important;
+                padding: 1rem;
+                overflow-y: auto;
+            }}
         }}
 
-        /* ── Expander & Container Styling ──────────────────── */
-        [data-testid="stExpander"] {{
-            background: rgba(26, 42, 64, 0.5) !important;
-            border: 1px solid rgba(148, 163, 184, 0.1) !important;
-            border-radius: 0.75rem !important;
+        /* ── Buttons, Inputs & Micro-interactions ─────────── */
+        .stButton > button {{
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: #cbd5e1 !important;
+            border-radius: var(--sharp-radius) !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            padding: 0.6rem 1rem !important;
+            transition: all 0.3s ease !important;
+        }}
+        .stButton > button:hover {{
+            border-color: var(--gold) !important;
+            background: rgba(212, 175, 55, 0.05) !important;
+            color: var(--gold) !important;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.1) !important;
         }}
 
-        .stContainer {{
-            background: transparent !important;
+        /* High Visibility Mode for active verse */
+        .active-verse {{
+            border-left: 4px solid var(--gold) !important;
+            background: rgba(212, 175, 55, 0.05) !important;
         }}
 
-        /* ── Audio Element ─────────────────────────────────── */
-        audio {{
-            width: 100%;
-            height: 2.5rem;
-            border-radius: 0.5rem;
+        /* ── Scrollbar (Premium Gold Thin) ────────────────── */
+        ::-webkit-scrollbar {{ width: 5px; height: 5px; }}
+        ::-webkit-scrollbar-track {{ background: transparent; }}
+        ::-webkit-scrollbar-thumb {{ background: var(--gold); border-radius: 0; }}
+        
+        /* ── Animations ───────────────────────────────────── */
+        @keyframes fadeInSlide {{
+            from {{ opacity: 0; transform: translateY(10px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
         }}
-
-        /* ── Divider ───────────────────────────────────────── */
-        hr {{
-            border-color: rgba(148, 163, 184, 0.1) !important;
-        }}
-
-        /* ── Alert Boxes ───────────────────────────────────── */
-        .stSuccess, .stError, .stWarning, .stInfo {{
-            background: rgba(26, 42, 64, 0.8) !important;
-            border-radius: 0.5rem !important;
+        .animate-reveal {{
+            animation: fadeInSlide 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }}
     </style>
     """,
@@ -314,8 +265,10 @@ with col_main:
 
 if col_chat is not None:
     with col_chat:
+        st.html('<div class="mobile-chat-overlay">')
         # Scholar Agent chat panel
         render_chat_panel(ayahs)
+        st.html('</div>')
 
 # ── Sync URL Parameters (Smart Resume Persistence) ────────────
 # Pushing these to the URL bar allows browsers to intrinsically remember 
