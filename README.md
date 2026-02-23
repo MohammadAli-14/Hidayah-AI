@@ -1,75 +1,64 @@
-# Hidayah AI: Ramadan Research Companion 🕌
+# Hidayah AI: The Royal Divine Library 🕌
 
-**Hidayah AI** is a cutting-edge web application designed to make Quranic study and research intuitive, engaging, and accessible. Specifically tailiored as a 30-day companion for Ramadan, it focuses on deep-diving into individual Juz (parts) with modern AI-powered insights.
-
----
-
-## 🌟 Key Features
-
-- **Interactive Quran Reader:** Beautiful dual-pane view with original Arabic text alongside English (Asad) and Urdu (Jalandhry) translations.
-- **Sequential Audio Engine:** A unique playback system that recites Arabic followed immediately by your chosen translation (English or Urdu), using high-quality reciters like Mishary Rashid Alafasy.
-- **Scholar Agent (AI Research):** Powered by Google Gemini 1.5 Flash, providing scholarly explanations, historical context, and tafsir for any verse.
-- **Contextual Web Research:** Real-time Islamic knowledge retrieval using the Tavily Search API.
-- **RAG Document Analysis:** Upload scholarly PDFs and query them directly. The Scholar Agent uses vector search to find answers within your specific documents.
-- **Premium UI/UX:** A high-end interface featuring glassmorphism, responsive design, and curated typography (Amiri + Playfair Display).
+**Hidayah AI** is a premium Ramadan Research Companion designed for deep Quranic immersion. Beyond a simple reader, it is a sophisticated AI-orchestrated environment that transforms scholarly study into a world-class, aesthetic experience.
 
 ---
 
-## 🛠️ Installation
+## 🏛️ The "Royal Divine" Experience
 
-To run Hidayah AI locally:
+Hidayah AI is built on a unique design philosophy that prioritizes **Visual Authority** and **Linguistic Depth**:
 
-1. **Clone the repository:**
+- **Glassmorphism 2.0**: A semi-transparent "Divine" interface using frosted-glass headers, grain-textured panels, and multi-layered shadows.
+- **Sharp Design Tokens**: A technical 2px radius aesthetic that provides a sharp, modern, and authoritative feel compared to generic rounded apps.
+- **Midnight & Gold Palette**: A curated contrast between Deep Midnight backgrounds (`#0F172A`) and vibrant Royal Gold accents (`#D4AF37`).
+- **Linguistic Trilingualism**: Seamless native support for **Arabic**, **English**, and **Urdu** across both text and audio orchestration.
+
+---
+
+## 🧠 Advanced AI Orchestration
+
+Hidayah AI leverages the latest in Generative AI to provide unprecedented scholarly depth:
+
+- **Multimodal Intent Routing**: Uses **Gemini 2.5 Flash** to instantaneously classify user queries into Verse Lookup, Scholarly Research, or Document Analysis.
+- **Deep Scholarly RAG**: A robust "Retrieval-Augmented Generation" pipeline using **FAISS Vector Search** and **Gemini Embeddings** to query scholarly PDF documents with high precision.
+- **Trilingual Audio Engine**: A unique synchronized playback system that orchestrates recitation (e.g., Mishary Rashid) followed by translation-accurate audio (Ibrahim Walk or Shamshad Ali Khan).
+- **Graceful Quota Management**: Professional, brand-aligned error masking that replaces technical API jargon with a "Scholar is Resting" status for service interruptions.
+
+---
+
+## 📱 Mobile-First Architecture
+
+Engineered for use during specialized Ramadan study sessions, Hidayah AI features:
+
+- **Mobile-Responsive Verse Stacking**: Intelligent CSS Grid transitions that stack language panes (Arabic → English → Urdu) for optimal vertical flow on touch devices.
+- **Scroll-Locked AI Overlay**: A sophisticated full-width mobile overlay for the Scholar Agent that locks background scrolling to maintain architectural focus.
+- **Slide-Up Interaction**: Native-feeling animations and a dedicated touch-friendly "✕" close button for seamless scholarly navigation.
+
+---
+
+## 🛠️ Technical Foundation
+
+- **Framework**: Streamlit (Python)
+- **Primary LLM**: Google Gemini 2.5 Flash
+- **Knowledge Retrieval**: Tavily Search & FAISS Vector Store
+- **Data Protocols**: AlQuran.cloud API Orchestration
+- **Typography**: Amiri (Quranic), Inter (Technical), Playfair Display (Headers)
+
+---
+
+## 📥 Getting Started
+
+1. **Clone & Install**:
    ```bash
    git clone https://github.com/mohammadali-14/Hidayah-AI.git
-   cd Hidayah-AI
-   ```
-
-2. **Install dependencies:**
-   ```bash
    pip install -r requirements.txt
    ```
-
-3. **Configure Environment:**
-   Copy `.env.example` to `.env` and add your API keys:
-   - `GEMINI_API_KEY`: Obtain from [Google AI Studio](https://aistudio.google.com/)
-   - `TAVILY_API_KEY`: Obtain from [Tavily AI](https://tavily.com/)
-
-4. **Launch the app:**
+2. **Configure Environment**:
+   Populate your `.env` with `GEMINI_API_KEY` and `TAVILY_API_KEY`.
+3. **Launch**:
    ```bash
    streamlit run app.py
    ```
 
 ---
-
-## 🚀 Deployment (Streamlit Cloud)
-
-Hidayah AI is optimized for one-click deployment to Streamlit Cloud:
-
-1. Push your code to a GitHub repository.
-2. Connect your repo at [share.streamlit.io](https://share.streamlit.io).
-3. Set your `app.py` as the main entry point.
-
-### 🔑 Configuring Secrets (Production)
-Since Streamlit Cloud does not read local `.env` files for security reasons, you must use the **Secrets** feature:
-
-1. Open your app dashboard on Streamlit Cloud.
-2. Click on **Settings** > **Secrets**.
-3. Paste the following into the text area (replace with your real keys):
-   ```toml
-   GEMINI_API_KEY = "your_actual_gemini_key_here"
-   TAVILY_API_KEY = "your_actual_tavily_key_here"
-   ```
-4. Click **Save**. The app will automatically reboot with the new keys active!
-
----
-
-## 📜 Technical Stack
-- **Framework:** Streamlit (Python)
-- **AI Models:** Google Gemini 1.5 Flash & Gemini Embedding
-- **Search:** Tavily API
-- **Vector DB:** FAISS (In-memory)
-- **Data Source:** AlQuran.cloud API
-
----
-**Developed by:** Hidayah AI Team.
+**Developed with devotion by the Hidayah AI Team.**
