@@ -83,19 +83,13 @@ def render_header(ayahs: list[dict], current_index: int = 0):
     st.markdown(
         f"""
         <style>
-        .scholar-toggle-anchor {{
-            position: relative;
-            width: 100%;
-            height: 0px;
-            overflow: visible;
-        }}
-        
-        button[title="Toggle Scholar Agent"] {{
-            position: absolute !important;
+        /* Target the HA button via its specific Streamlit key */
+        .st-key-btn_toggle_scholar_header button {{
+            position: fixed !important;
             right: 1.5rem !important;
-            top: -3.2rem !important;
-            width: 2.2rem !important;
-            height: 2.2rem !important;
+            top: 1.1rem !important; /* Adjust based on header height */
+            width: 2.25rem !important;
+            height: 2.25rem !important;
             padding: 0 !important;
             border-radius: 50% !important;
             background-image: url('{logo_b64}') !important;
@@ -103,28 +97,34 @@ def render_header(ayahs: list[dict], current_index: int = 0):
             background-position: center !important;
             border: 2px solid var(--gold) !important;
             color: transparent !important;
-            box-shadow: 0 0 0 2px var(--bg-dark), 0 4px 10px rgba(0,0,0,0.5) !important;
-            z-index: 100 !important;
-            transition: all 0.2s ease !important;
+            box-shadow: 0 0 0 2px var(--bg-dark), 0 4px 12px rgba(0,0,0,0.6) !important;
+            z-index: 1000000 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             background-color: transparent !important;
         }}
         
-        button[title="Toggle Scholar Agent"]:hover {{
-            transform: scale(1.08) !important;
-            box-shadow: 0 0 15px {GOLD}, 0 0 0 2px #0F172A !important;
-            border-color: #F3E5AB !important;
+        .st-key-btn_toggle_scholar_header button:hover {{
+            transform: scale(1.12) rotate(5deg) !important;
+            box-shadow: 0 0 20px var(--gold), 0 0 0 2px var(--bg-dark) !important;
+            border-color: var(--gold-light) !important;
         }}
         
-        button[title="Toggle Scholar Agent"] p {{
+        /* Hide the button text "HA" and its container */
+        .st-key-btn_toggle_scholar_header button p,
+        .st-key-btn_toggle_scholar_header button div[data-testid="stMarkdownContainer"] {{
             display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            font-size: 0 !important;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
-
-    with st.container():
-        st.markdown('<div class="scholar-toggle-anchor"></div>', unsafe_allow_html=True)
-        if st.button("HA", help="Toggle Scholar Agent", key="btn_toggle_scholar_header", use_container_width=False):
-            st.session_state.show_scholar_agent = not st.session_state.show_scholar_agent
-            st.rerun()
+    
+    # Render button with help to provide a title just in case
+    st.button("HA", key="btn_toggle_scholar_header", help="Toggle Scholar Agent")
+    
+    if st.session_state.get("btn_toggle_scholar_header"): # Handle click if button was clicked
+        st.session_state.show_scholar_agent = not st.session_state.show_scholar_agent
+        st.rerun()

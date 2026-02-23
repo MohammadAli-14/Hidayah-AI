@@ -26,6 +26,7 @@ from ui.quran_display import render_quran_view
 from ui.audio_player import render_audio_player
 from ui.chat_panel import render_chat_panel
 
+
 # ── Initialize Session State ─────────────────────────────────
 init_session_state()
 
@@ -56,14 +57,13 @@ st.markdown(
         }}
 
         /* ── Global Reset & Theme ─────────────────────────── */
-        .stApp {{
-            background-color: var(--bg-dark);
+        [data-testid="stAppViewContainer"] {{
+            background-color: var(--bg-dark) !important;
             background-image: 
                 radial-gradient(circle at 50% 0%, rgba(26, 42, 64, 1) 0%, rgba(15, 23, 42, 1) 100%),
-                url('https://www.transparenttextures.com/patterns/noise-lines.png');
-            background-blur: 100px;
-            color: #e2e8f0;
-            font-family: 'Inter', sans-serif;
+                url('https://www.transparenttextures.com/patterns/noise-lines.png') !important;
+            color: #e2e8f0 !important;
+            font-family: 'Inter', sans-serif !important;
         }}
 
         /* ── Hide Streamlit Default Chrome ─────────────────── */
@@ -243,7 +243,6 @@ ayahs = st.session_state.ayahs
 current_ayah_index = st.session_state.get("current_ayah_index", 0)
 
 
-# ── Main Layout: Quran View (left) + Chat Panel (right) ──────
 # ── Main Layout: Quran View (left) + Chat Panel (right) ──────
 show_chat = st.session_state.get("show_scholar_agent", False)
 
