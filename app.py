@@ -263,30 +263,6 @@ with col_main:
     # Header
     render_header(ayahs, current_ayah_index)
 
-    # Top Audio Language Control (single source of truth)
-    st.html(
-        """
-        <div style="
-            margin: 0.75rem 0 0.5rem 0;
-            padding: 0.75rem 0.9rem;
-            border: 1px solid rgba(148,163,184,0.12);
-            border-radius: 2px;
-            background: rgba(26,42,64,0.55);
-            backdrop-filter: blur(10px);
-            font-family: Inter, sans-serif;
-        ">
-            <p style="
-                margin: 0 0 0.45rem 0;
-                color: #94a3b8;
-                font-size: 0.65rem;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                font-weight: 700;
-            ">Choose Audio Language</p>
-        </div>
-        """
-    )
-
     selected_mode = st.selectbox(
         "Choose Audio Language",
         AUDIO_MODES,
