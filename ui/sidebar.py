@@ -103,14 +103,22 @@ def render_sidebar():
             '<p style="font-size:0.7rem; color:#94a3b8; margin-bottom:0.25rem;">Audio Recitation</p>',
             unsafe_allow_html=True,
         )
-        audio_mode = st.selectbox(
-            "Audio Mode",
-            AUDIO_MODES,
-            index=AUDIO_MODES.index(st.session_state.get("audio_mode", AUDIO_MODES[0])),
-            label_visibility="collapsed",
-            key="audio_mode_select",
+        current_mode = st.session_state.get("audio_mode", AUDIO_MODES[0])
+        st.html(
+            f"""
+            <div style="
+                padding: 0.55rem 0.65rem;
+                border: 1px solid rgba(148,163,184,0.16);
+                border-radius: 2px;
+                background: rgba(15,23,42,0.55);
+                margin-bottom: 0.55rem;
+                font-family: Inter, sans-serif;
+            ">
+                <p style="margin:0; color:#e2e8f0; font-size:0.78rem; font-weight:600;">{current_mode}</p>
+                <p style="margin:0.15rem 0 0 0; color:#64748b; font-size:0.62rem;">Use top control to change language</p>
+            </div>
+            """
         )
-        st.session_state.audio_mode = audio_mode
 
         # Smart Resume button
 

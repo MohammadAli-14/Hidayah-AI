@@ -19,7 +19,7 @@ st.set_page_config(
 
 from utils.state import init_session_state
 from utils.quran_api import fetch_juz_combined, get_surah_info_for_juz
-from utils.config import GOLD, MIDNIGHT_BLUE, BG_DARK, JUZ_DATA
+from utils.config import GOLD, MIDNIGHT_BLUE, BG_DARK, JUZ_DATA, AUDIO_MODES
 from ui.sidebar import render_sidebar
 from ui.header import render_header
 from ui.quran_display import render_quran_view
@@ -263,11 +263,45 @@ with col_main:
     # Header
     render_header(ayahs, current_ayah_index)
 
+    # Top Audio Language Control (single source of truth)
+    st.html(
+        """
+        <div style="
+            margin: 0.75rem 0 0.5rem 0;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 2px;
+            background: rgba(26,42,64,0.55);
+            backdrop-filter: blur(10px);
+            font-family: Inter, sans-serif;
+        ">
+            <p style="
+                margin: 0 0 0.45rem 0;
+                color: #94a3b8;
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                font-weight: 700;
+            ">Choose Audio Language</p>
+        </div>
+        """
+    )
+
+    selected_mode = st.selectbox(
+        "Choose Audio Language",
+        AUDIO_MODES,
+        index=AUDIO_MODES.index(st.session_state.get("audio_mode", AUDIO_MODES[0])),
+        key="audio_mode_top_select",
+    )
+    if selected_mode != st.session_state.get("audio_mode"):
+        st.session_state.audio_mode = selected_mode
+        st.rerun()
+
+    # Audio player (top)
+    render_audio_player(ayahs, current_ayah_index)
+
     # Quran dual-pane display
     render_quran_view(ayahs, current_ayah_index)
-
-    # Audio player footer
-    render_audio_player(ayahs, current_ayah_index)
 
 if col_chat is not None:
     with col_chat:
