@@ -8,7 +8,7 @@ Run with: streamlit run app.py
 
 import streamlit as st
 
-# ── Page Config (MUST be first Streamlit call) ────────────────
+
 st.set_page_config(
     page_title="Hidayah AI — Ramadan Research Companion",
     page_icon="🕌",
@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Imports ───────────────────────────────────────────────────
+
 from utils.state import init_session_state
 from utils.quran_api import fetch_juz_combined, get_surah_info_for_juz
 from utils.config import GOLD, MIDNIGHT_BLUE, BG_DARK, JUZ_DATA

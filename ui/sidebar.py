@@ -48,42 +48,53 @@ def render_sidebar():
             unsafe_allow_html=True,
         )
 
-        # Scrollable Juz list
         current_juz = st.session_state.get("current_juz", 1)
 
         for juz_num, juz_info in JUZ_DATA.items():
             is_active = juz_num == current_juz
 
             if is_active:
-                # Active Juz — gold highlight (rendered via st.html for div support)
                 st.html(
                     f"""
                     <div style="
-                        display: flex; align-items: center; padding: 0.6rem 0.75rem;
-                        border-radius: 0.75rem; margin-bottom: 0.25rem;
-                        background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.25);
-                        color: {GOLD}; cursor: default; font-family: Inter, sans-serif;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0.7rem 0.75rem;
+                        border-radius: 0.75rem;
+                        margin-bottom: 0.35rem;
+                        background: rgba(212,175,55,0.12);
+                        border: 1px solid rgba(212,175,55,0.45);
+                        font-family: Inter, sans-serif;
                     ">
+                        <div style="display:flex; align-items:center; gap:0.65rem; min-width:0;">
+                            <span style="
+                                width: 1.75rem; height: 1.75rem; border-radius: 50%;
+                                background: {GOLD}; color: #0F172A; font-weight: 800;
+                                display: inline-flex; align-items: center; justify-content: center;
+                                font-size: 0.75rem; flex-shrink: 0;
+                            ">{juz_num}</span>
+                            <span style="
+                                color: #f8fafc; font-size: 0.74rem; font-weight: 600;
+                                text-transform: uppercase; letter-spacing: 0.04em;
+                            ">{juz_info['english']}</span>
+                        </div>
                         <span style="
-                            display: inline-flex; align-items: center; justify-content: center;
-                            width: 1.5rem; height: 1.5rem; border-radius: 50%;
-                            background: {GOLD}; color: #0F172A; font-size: 0.7rem; font-weight: 700;
-                            margin-right: 0.75rem; flex-shrink: 0;
-                        ">{juz_num}</span>
-                        <span style="font-size: 0.85rem; font-weight: 500;">{juz_info['name']}</span>
+                            font-family: Amiri, serif; color: #ffffff; font-size: 1.05rem;
+                            direction: rtl; line-height: 1;
+                        ">{juz_info['arabic']}</span>
                     </div>
                     """
                 )
             else:
-                # Inactive Juz — clickable button
-                if st.button(
-                    f"{juz_num}. {juz_info['name']}",
-                    key=f"juz_btn_{juz_num}",
-                    use_container_width=True,
-                ):
+                label = f"{juz_num}. {juz_info['english']}  |  {juz_info['arabic']}"
+                if st.button(label, key=f"juz_btn_{juz_num}", use_container_width=True):
                     st.session_state.current_juz = juz_num
                     st.session_state.current_ayah_index = 0
+                    st.session_state.last_ayah = 0
+                    st.session_state._loaded_juz = None
                     st.session_state.ayahs = []
+                    st.session_state.is_playing = False
                     st.rerun()
 
         # ── Audio Controls ────────────────────────────────────────
