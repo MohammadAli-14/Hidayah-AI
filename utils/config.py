@@ -70,6 +70,55 @@ URDU_EDITION = "ur.jalandhry"       # Maulana Fateh Muhammad Jalandhry
 ENGLISH_AUDIO_EDITION = "en.walk"   # Ibrahim Walk
 URDU_AUDIO_EDITION = "ur.khan"      # Shamshad Ali Khan
 
+# ── Tafseer & Hadith Sources ───────────────────────────────────
+TAFSEER_EDITIONS = {
+    "ar.muyassar": "Tafsir Al-Muyassar",
+    "ar.jalalayn": "Tafsir Al-Jalalayn",
+    "ar.qurtubi": "Tafsir Al-Qurtubi",
+}
+DEFAULT_TAFSEER_EDITION = "ar.muyassar"
+TAFSEER_LANGUAGE_LABELS = {
+    "ar": "Arabic",
+    "en": "English",
+    "ur": "Urdu",
+}
+TAFSEER_SOURCE_TARGET_COUNT = 3
+
+# Tafseer provider strategy (phase-1 keeps current provider default for safety)
+TAFSEER_PROVIDER_PRIMARY = "alquran_cloud"
+TAFSEER_PROVIDER_PRIORITY = ["alquran_cloud", "quran_com", "spa5k"]
+
+# Preferred tafseer edition IDs (best-effort). Actual availability is resolved dynamically
+# from AlQuran.cloud and these act as ranking hints only.
+TAFSEER_PREFERRED_BY_LANGUAGE = {
+    "ar": [
+        "ar.muyassar",
+        "ar.jalalayn",
+        "ar.qurtubi",
+        "ar.waseet",
+        "ar.baghawi",
+        "ar.miqbas",
+    ],
+    "en": [
+        "en.jalalayn",
+        "en.maududi",
+        "en.ahmedali",
+    ],
+    "ur": [
+        "ur.jalandhry",
+        "ur.junagarhi",
+        "ur.maududi",
+    ],
+}
+
+# Hadith retrieval in this phase uses curated web search over trusted collections.
+HADITH_TRUSTED_DOMAINS = [
+    "sunnah.com",
+    "islamqa.info",
+]
+HADITH_MAX_RESULTS = 4
+CANONICAL_LINK_FALLBACK = "api_fallback"
+
 # ── Audio Modes ───────────────────────────────────────────────────
 AUDIO_MODES = [
     "Arabic (Mishary Rashid)",

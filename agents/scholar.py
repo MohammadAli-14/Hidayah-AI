@@ -7,6 +7,7 @@ Routes to appropriate data source based on classified intent.
 from google import genai
 from utils.config import MODEL_SCHOLAR, GEMINI_API_KEY, get_gemini_client
 from agents.web_search import search_web
+from agents.context_retriever import get_context_bundle_for_window
 
 SCHOLAR_SYSTEM_PROMPT = """You are Hidayah AI, an Islamic scholarly research assistant. You are knowledgeable, respectful, and precise.
 
@@ -27,6 +28,8 @@ def get_scholar_response(
     query: str,
     intent: str,
     ayahs_context: list[dict] | None = None,
+    ayah_window: list[dict] | None = None,
+    tafseer_language: str = "en",
     pdf_context: str | None = None,
 ) -> str:
     """
@@ -49,15 +52,79 @@ def get_scholar_response(
         print(f"📖 [SCHOLAR] Assembling context. Intent: {intent}")
         # Build context based on intent
         context_parts = []
+        grounded_sources = []
 
-        if intent == "VERSE_LOOKUP" and ayahs_context:
+        if intent == "VERSE_LOOKUP" and (ayah_window or ayahs_context):
+            window = ayah_window or ayahs_context or []
+
             # Provide current verse context
             verses_text = "\n".join(
                 f"[{a['surah_name']} {a['number_in_surah']}] Arabic: {a['arabic']}\n"
                 f"English: {a['english']}\nUrdu: {a['urdu']}"
-                for a in ayahs_context[:10]  # Limit context size
+                for a in window[:10]  # Limit context size
             )
             context_parts.append(f"Currently viewing these Quranic verses:\n{verses_text}")
+
+            # Retrieve grounded Tafseer + Hadith across visible ayah window
+            bundle = get_context_bundle_for_window(
+                ayah_window=window[:10],
+                tafseer_language=tafseer_language,
+            )
+
+            tafsir_context_lines = []
+            hadith_context_lines = []
+            tafsir_counter = 1
+            hadith_counter = 1
+
+            if bundle:
+                tafsir_by_ayah = bundle.get("tafsir_by_ayah", {})
+                hadith_by_ayah = bundle.get("hadith_by_ayah", {})
+                citations = bundle.get("citations", [])
+
+                for ayah_ref, tafsir_items in tafsir_by_ayah.items():
+                    for item in tafsir_items[:2]:
+                        tafsir_context_lines.append(
+                            f"[T{tafsir_counter}] {item['source_name']} ({ayah_ref}, {item.get('language', '').upper()})\n"
+                            f"{item['excerpt']}"
+                        )
+                        tafsir_source = (
+                            f"[T{tafsir_counter}] {item['source_name']} | {ayah_ref} | "
+                            f"lang:{item.get('language', '').upper()} | canonical:{item.get('canonical_status', 'unverified')}"
+                        )
+                        if item.get("canonical_url"):
+                            tafsir_source += f" — {item['canonical_url']}"
+                        grounded_sources.append(tafsir_source)
+                        tafsir_counter += 1
+
+                for ayah_ref, hadith_items in hadith_by_ayah.items():
+                    for item in hadith_items[:1]:
+                        hadith_context_lines.append(
+                            f"[H{hadith_counter}] {item['source_name']} ({ayah_ref})\n{item['excerpt']}"
+                        )
+                        hadith_counter += 1
+
+                for idx, citation in enumerate(citations, start=1):
+                    citation_type = citation.get("type", "source")
+                    source_name = citation.get("source_name", "Unknown Source")
+                    reference = citation.get("reference", "")
+                    language = (citation.get("language", "") or "").upper() or "N/A"
+                    canonical_status = citation.get("canonical_status", "unverified")
+                    canonical_url = citation.get("canonical_url", "")
+                    ayah_ref = citation.get("metadata", {}).get("ayah_ref", "")
+                    source_rank = citation.get("source_rank", 0)
+
+                    line = (
+                        f"type:{citation_type} | id:C{idx} | source:{source_name} | ref:{reference} | "
+                        f"ayah:{ayah_ref} | lang:{language} | rank:{source_rank} | canonical:{canonical_status}"
+                    )
+                    if canonical_url:
+                        line += f" | url:{canonical_url}"
+                    grounded_sources.append(line)
+
+            if tafsir_context_lines:
+                context_parts.append("Authenticated Tafseer Context:\n" + "\n\n".join(tafsir_context_lines[:8]))
+            if hadith_context_lines:
+                context_parts.append("Related Hadith references:\n" + "\n\n".join(hadith_context_lines[:5]))
 
         elif intent == "SCHOLARLY_RESEARCH":
             # Fetch web results for additional context
@@ -93,7 +160,10 @@ def get_scholar_response(
             return "⚠️ **Scholar Agent error:** The model returned an empty response. This might be due to safety filters or a temporary connection issue."
 
         print("✨ [SCHOLAR] Response generated successfully.")
-        return response.text
+        answer = response.text
+        if grounded_sources:
+            answer += "\n\nSources:\n" + "\n".join(f"- {src}" for src in grounded_sources)
+        return answer
 
     except genai.errors.APIError as e:
         if e.code == 429:

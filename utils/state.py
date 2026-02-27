@@ -50,6 +50,11 @@ def init_session_state():
         # UI
         "show_settings": False,
         "show_scholar_agent": False,
+        "context_open": True,
+        "context_tab": "Tafseer",
+        "selected_tafseer_source": None,
+        "tafsir_language": "en",
+        "visible_ayah_window": [],
     }
 
     for key, value in defaults.items():

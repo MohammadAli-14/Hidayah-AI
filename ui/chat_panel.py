@@ -5,12 +5,65 @@ Renders the Scholar Agent right panel: chat history, input area, PDF upload, and
 
 import streamlit as st
 from datetime import datetime
+from html import escape
 from utils.config import GOLD, GEMINI_API_KEY, get_logo_base64
 from agents.router import classify_intent
 from agents.scholar import get_scholar_response
 from rag.pdf_loader import extract_and_chunk
 from rag.vector_store import build_index
 from rag.query import query_pdf
+
+
+def _split_answer_and_sources(content: str):
+    marker = "\n\nSources:\n"
+    if marker not in content:
+        return content, []
+
+    answer, raw_sources = content.split(marker, 1)
+    sources = []
+    for line in raw_sources.splitlines():
+        source_line = line.strip()
+        if not source_line.startswith("- "):
+            continue
+        body = source_line[2:].strip()
+        parsed = {
+            "type": "source",
+            "id": "",
+            "source": body,
+            "ref": "",
+            "ayah": "",
+            "lang": "",
+            "rank": "",
+            "canonical": "unverified",
+            "url": "",
+            "label": body,
+        }
+
+        if "|" in body and ":" in body:
+            for segment in [part.strip() for part in body.split("|")]:
+                if ":" not in segment:
+                    continue
+                key, value = segment.split(":", 1)
+                key = key.strip().lower()
+                value = value.strip()
+                if key in parsed:
+                    parsed[key] = value
+
+            source_bits = [parsed.get("source", "")]
+            if parsed.get("ref"):
+                source_bits.append(f"ref {parsed['ref']}")
+            if parsed.get("ayah"):
+                source_bits.append(f"ayah {parsed['ayah']}")
+            parsed["label"] = " • ".join(bit for bit in source_bits if bit)
+        else:
+            parts = [part.strip() for part in body.split(" — ")]
+            if parts and parts[-1].startswith("http"):
+                parsed["url"] = parts[-1]
+                parsed["label"] = " — ".join(parts[:-1]).strip()
+
+        sources.append(parsed)
+
+    return answer, sources
 
 
 def _render_chat_header():
@@ -126,6 +179,7 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
         return
 
     if role == "assistant":
+        answer_body, sources = _split_answer_and_sources(content)
         st.html(
             f"""
             <div class="animate-reveal" style="margin-bottom: 1.25rem; font-family: Inter, sans-serif;">
@@ -143,11 +197,54 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
                     max-width: 95%;
                     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
                 ">
-                    {content}
+                    {answer_body}
                 </div>
             </div>
             """
         )
+
+        if sources:
+            sources_html = []
+            for source in sources:
+                label = escape(source["label"])
+                canonical_badge = escape((source.get("canonical") or "unverified").upper())
+                meta = []
+                if source.get("type"):
+                    meta.append(source["type"].upper())
+                if source.get("lang"):
+                    meta.append(source["lang"])
+                if source.get("rank"):
+                    meta.append(f"Rank {source['rank']}")
+                meta_text = " • ".join(meta)
+
+                if source["url"]:
+                    sources_html.append(
+                        f'<li style="margin-bottom:0.55rem;">'
+                        f'<a href="{source["url"]}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:none;">{label}</a>'
+                        f'<div style="font-size:0.62rem;color:#94a3b8;margin-top:0.15rem;">{escape(meta_text)} • Canonical {canonical_badge}</div>'
+                        f'</li>'
+                    )
+                else:
+                    sources_html.append(
+                        f'<li style="margin-bottom:0.55rem;color:#94a3b8;">{label}'
+                        f'<div style="font-size:0.62rem;color:#94a3b8;margin-top:0.15rem;">{escape(meta_text)} • Canonical {canonical_badge}</div>'
+                        f'</li>'
+                    )
+
+            st.html(
+                f"""
+                <div style="margin: -0.7rem 0 1rem 0.4rem; max-width: 95%; font-family: Inter, sans-serif;">
+                    <p style="font-size: 0.63rem; color: #fbbf24; letter-spacing: 0.8px; text-transform: uppercase; margin: 0 0 0.35rem 0; font-weight: 700;">
+                        Sources
+                    </p>
+                    <div style="border: 1px solid rgba(148, 163, 184, 0.2); border-radius: var(--sharp-radius); padding: 0.55rem 0.75rem; background: rgba(15,23,42,0.35);">
+                        <ul style="margin:0; padding-left:1rem; font-size:0.74rem; line-height:1.4;">
+                            {''.join(sources_html)}
+                        </ul>
+                    </div>
+                </div>
+                """
+            )
     else:
         st.html(
             f"""
@@ -206,11 +303,20 @@ def _process_query(query: str, ayahs: list[dict]):
         else:
             response = "⚠️ No PDF uploaded yet. Please upload a PDF using the 📎 button below."
     else:
+        visible_window = st.session_state.get("visible_ayah_window", ayahs[:10] if ayahs else [])
+        tafsir_language = st.session_state.get("tafsir_language", "en")
+
+        if tafsir_language not in {"ar", "en", "ur"}:
+            audio_mode = st.session_state.get("audio_mode", "")
+            tafsir_language = "ur" if "Urdu" in audio_mode else "en"
+
         # Use scholar agent (handles both VERSE_LOOKUP and SCHOLARLY_RESEARCH)
         response = get_scholar_response(
             query=query,
             intent=intent,
             ayahs_context=ayahs[:10] if ayahs else None,
+            ayah_window=visible_window,
+            tafseer_language=tafsir_language,
         )
 
     # Add assistant response to history

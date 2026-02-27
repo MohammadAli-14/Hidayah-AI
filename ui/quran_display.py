@@ -5,6 +5,7 @@ Renders the dual-pane view: Arabic text (RTL) on the left, English + Urdu transl
 
 import streamlit as st
 from utils.config import GOLD, MIDNIGHT_BLUE
+from ui.verse_context_panel import render_verse_context_panel
 
 AYAHS_PER_PAGE = 5
 
@@ -60,6 +61,7 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
     start = (safe_index // AYAHS_PER_PAGE) * AYAHS_PER_PAGE
     end = min(start + AYAHS_PER_PAGE, total)
     page_ayahs = ayahs[start:end]
+    st.session_state.visible_ayah_window = page_ayahs
 
     # Build the dual-pane HTML for each ayah
     rows_html = ""
@@ -204,3 +206,7 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
                 st.session_state.current_ayah_index = end
                 st.session_state.last_ayah = end
                 st.rerun()
+
+    # ── Tafseer + Hadith Context Panel ───────────────────────
+    active_idx = min(st.session_state.get("current_ayah_index", 0), len(ayahs) - 1)
+    render_verse_context_panel(ayahs[active_idx])
