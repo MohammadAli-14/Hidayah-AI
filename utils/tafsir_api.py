@@ -11,6 +11,7 @@ from utils.config import (
     DEFAULT_TAFSEER_EDITION,
     TAFSEER_SOURCE_TARGET_COUNT,
     TAFSEER_PREFERRED_BY_LANGUAGE,
+    TAFSEER_ALLOW_TRANSLATION_AS_EXPLANATORY,
 )
 from utils.evidence import normalize_tafseer
 
@@ -26,6 +27,7 @@ def fetch_tafseer_for_ayah(
         edition = DEFAULT_TAFSEER_EDITION
 
     url = f"{QURAN_API_BASE}/ayah/{surah_number}:{ayah_number}/{edition}"
+    human_url = f"https://alquran.cloud/ayah/{surah_number}/{ayah_number}"
 
     try:
         response = requests.get(url, timeout=15)
@@ -54,7 +56,7 @@ def fetch_tafseer_for_ayah(
                 "edition": edition,
                 "edition_name": TAFSEER_EDITIONS.get(edition, edition),
                 "api_url": url,
-                "canonical_url_human": "",
+                "canonical_url_human": human_url,
             },
         )
 
@@ -115,6 +117,12 @@ def discover_tafseer_editions(language: str) -> list[dict]:
             if normalized_language == "ar" and entry_type != "tafsir":
                 continue
             if normalized_language in {"en", "ur"} and entry_type not in {"tafsir", "translation"}:
+                continue
+            if (
+                normalized_language in {"en", "ur"}
+                and not TAFSEER_ALLOW_TRANSLATION_AS_EXPLANATORY
+                and entry_type != "tafsir"
+            ):
                 continue
             if entry.get("format") != "text":
                 continue
@@ -184,6 +192,7 @@ def fetch_multisource_tafseer_for_ayah(
         if not edition:
             continue
         url = f"{QURAN_API_BASE}/ayah/{surah_number}:{ayah_number}/{edition}"
+        human_url = f"https://alquran.cloud/ayah/{surah_number}/{ayah_number}"
 
         try:
             response = requests.get(url, timeout=15)
@@ -210,6 +219,11 @@ def fetch_multisource_tafseer_for_ayah(
                     link_type="api_fallback",
                     canonical_status="unverified",
                     source_rank=rank,
+                    authority=(
+                        "Classical Tafseer"
+                        if (source.get("type") or "tafsir") == "tafsir"
+                        else "Quran Translation (Explanatory)"
+                    ),
                     metadata={
                         "edition": edition,
                         "edition_name": source.get("name", ""),
@@ -219,7 +233,7 @@ def fetch_multisource_tafseer_for_ayah(
                         "requested_language": requested_language,
                         "fallback_language_used": resolved_language != requested_language,
                         "api_url": url,
-                        "canonical_url_human": "",
+                        "canonical_url_human": human_url,
                     },
                 )
             )

@@ -17,6 +17,7 @@ def normalize_tafseer(
     link_type: str = "api_fallback",
     canonical_status: str = "unverified",
     source_rank: int = 0,
+    authority: str = "Classical Tafseer",
     metadata: dict | None = None,
 ) -> dict:
     """Normalize a Tafseer entry to a standard schema."""
@@ -39,7 +40,7 @@ def normalize_tafseer(
         "language": language,
         "source_rank": source_rank,
         "metadata": metadata or {},
-        "authority": "Classical Tafseer",
+        "authority": authority,
     }
 
 
@@ -54,6 +55,7 @@ def normalize_hadith(
     link_type: str = "search_fallback",
     canonical_status: str = "unverified",
     source_rank: int = 0,
+    authority: str = "Hadith Reference",
     metadata: dict | None = None,
 ) -> dict:
     """Normalize a Hadith/search-derived entry to a standard schema."""
@@ -77,5 +79,5 @@ def normalize_hadith(
         "language": language,
         "source_rank": source_rank,
         "metadata": metadata or {},
-        "authority": "Hadith Reference",
+        "authority": authority,
     }

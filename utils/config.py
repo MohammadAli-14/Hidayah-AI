@@ -87,6 +87,7 @@ TAFSEER_SOURCE_TARGET_COUNT = 3
 # Tafseer provider strategy (phase-1 keeps current provider default for safety)
 TAFSEER_PROVIDER_PRIMARY = "alquran_cloud"
 TAFSEER_PROVIDER_PRIORITY = ["alquran_cloud", "quran_com", "spa5k"]
+TAFSEER_ALLOW_TRANSLATION_AS_EXPLANATORY = True
 
 # Preferred tafseer edition IDs (best-effort). Actual availability is resolved dynamically
 # from AlQuran.cloud and these act as ranking hints only.
@@ -118,6 +119,11 @@ HADITH_TRUSTED_DOMAINS = [
 ]
 HADITH_MAX_RESULTS = 4
 CANONICAL_LINK_FALLBACK = "api_fallback"
+HADITH_CANONICAL_STATUS_DEFAULT = "unverified"
+
+# UI visibility controls for source transparency details.
+# Keep False for production-facing UX; enable for internal QA/debugging.
+SHOW_TECHNICAL_SOURCE_DETAILS = False
 
 # ── Audio Modes ───────────────────────────────────────────────────
 AUDIO_MODES = [

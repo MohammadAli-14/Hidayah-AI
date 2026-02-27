@@ -4,7 +4,11 @@ Renders Tafseer and related Hadith for the currently selected ayah.
 """
 
 import streamlit as st
-from utils.config import TAFSEER_LANGUAGE_LABELS, TAFSEER_SOURCE_TARGET_COUNT
+from utils.config import (
+    TAFSEER_LANGUAGE_LABELS,
+    TAFSEER_SOURCE_TARGET_COUNT,
+    SHOW_TECHNICAL_SOURCE_DETAILS,
+)
 from utils.tafsir_api import fetch_multisource_tafseer_for_ayah
 from utils.hadith_api import fetch_related_hadith
 
@@ -98,11 +102,22 @@ def render_verse_context_panel(current_ayah: dict):
                 human_url = metadata.get("canonical_url_human", "")
                 api_url = metadata.get("api_url") or tafsir.get("canonical_url") or ""
 
-                if human_url and not _looks_like_raw_api_link(human_url):
-                    st.markdown(f"[Open reference page]({human_url})")
+                primary_url = ""
+                primary_label = ""
 
-                if api_url:
-                    st.markdown(f"[Open raw source (JSON)]({api_url})")
+                if human_url and not _looks_like_raw_api_link(human_url):
+                    primary_url = human_url
+                    primary_label = "Open Source Page"
+                elif api_url:
+                    primary_url = api_url
+                    primary_label = "Open Source Record"
+
+                if primary_url:
+                    st.markdown(f"[{primary_label}]({primary_url})")
+
+                if api_url and SHOW_TECHNICAL_SOURCE_DETAILS:
+                    with st.expander("Source details"):
+                        st.markdown(f"[View API response (JSON)]({api_url})")
         else:
             st.info("No explanatory sources are available right now for this language.")
 

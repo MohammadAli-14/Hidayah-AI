@@ -4,9 +4,27 @@ Uses trusted-domain web retrieval to surface relevant Hadith references.
 """
 
 import streamlit as st
+from urllib.parse import urlparse
 from utils.config import HADITH_TRUSTED_DOMAINS, HADITH_MAX_RESULTS
 from utils.evidence import normalize_hadith
 from agents.web_search import search_web
+
+
+def _trusted_host(url: str) -> str:
+    """Return matched trusted host using strict hostname matching, else empty."""
+    try:
+        hostname = (urlparse(url).hostname or "").lower().strip()
+    except Exception:
+        return ""
+
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+
+    for domain in HADITH_TRUSTED_DOMAINS:
+        normalized = domain.lower().strip()
+        if hostname == normalized or hostname.endswith(f".{normalized}"):
+            return normalized
+    return ""
 
 
 @st.cache_data(ttl=900, show_spinner=False)
@@ -35,14 +53,22 @@ def fetch_related_hadith(
         if not url:
             continue
 
-        if not any(domain in url for domain in HADITH_TRUSTED_DOMAINS):
+        trusted_host = _trusted_host(url)
+        if not trusted_host:
             continue
 
         source_name = "Sunnah Reference"
-        if "sunnah.com" in url:
+        source_type = "hadith_collection"
+        authority = "Hadith Corpus Reference"
+        canonical_status = "domain_verified"
+
+        if trusted_host == "sunnah.com":
             source_name = "Sunnah.com"
-        elif "islamqa.info" in url:
-            source_name = "IslamQA"
+        elif trusted_host == "islamqa.info":
+            source_name = "IslamQA Commentary"
+            source_type = "scholarly_commentary"
+            authority = "Scholarly Commentary"
+            canonical_status = "unverified"
 
         normalized.append(
             normalize_hadith(
@@ -54,11 +80,13 @@ def fetch_related_hadith(
                 citation_id=f"hadith:{source_name.lower().replace(' ', '_')}:{url}",
                 canonical_url=url,
                 link_type="search_fallback",
-                canonical_status="verified",
+                canonical_status=canonical_status,
+                authority=authority,
                 metadata={
                     "surah_name": surah_name,
                     "ayah_number": ayah_number,
-                    "trusted_domain": source_name,
+                    "trusted_domain": trusted_host,
+                    "source_type": source_type,
                 },
             )
         )
