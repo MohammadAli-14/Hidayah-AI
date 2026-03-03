@@ -4,6 +4,9 @@ Wraps the Tavily API for fetching scholarly Islamic content from the web.
 """
 
 from utils.config import TAVILY_API_KEY
+from utils.logger import get_logger
+
+log = get_logger("web_search")
 
 
 def search_web(query: str, max_results: int = 5) -> list[dict]:
@@ -12,15 +15,15 @@ def search_web(query: str, max_results: int = 5) -> list[dict]:
     Returns a list of result dicts: [{"title": ..., "url": ..., "content": ...}, ...]
     """
     if not TAVILY_API_KEY:
-        print("❌ [TAVILY] API Key Missing - Bypassing web search.")
+        log.warning("Tavily API Key Missing - Bypassing web search.")
         return [{"title": "API Key Missing", "url": "", "content": "Tavily API key not configured. Please add TAVILY_API_KEY to your .env file."}]
 
     try:
         from tavily import TavilyClient
 
         client = TavilyClient(api_key=TAVILY_API_KEY)
-        
-        print(f"🌍 [TAVILY] Searching web for: '{query}'")
+
+        log.info(f"Searching web for: '{query[:80]}'")
         response = client.search(
             query=query,
             search_depth="advanced",
@@ -46,9 +49,9 @@ def search_web(query: str, max_results: int = 5) -> list[dict]:
                 "content": item.get("content", ""),
             })
 
-        print(f"✅ [TAVILY] Found {len(results)} distinct sources.")
+        log.info(f"Found {len(results)} distinct sources.")
         return results
 
     except Exception as e:
-        print(f"❌ [TAVILY] Search failed: {e}")
+        log.error(f"Search failed: {e}")
         return [{"title": "Search Error", "url": "", "content": f"Web search failed: {str(e)}"}]

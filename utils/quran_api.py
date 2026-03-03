@@ -6,6 +6,7 @@ Fetches Juz data (Arabic text, audio URLs, English & Urdu translations).
 import requests
 import streamlit as st
 from utils.config import QURAN_API_BASE, ARABIC_EDITION, ENGLISH_EDITION, URDU_EDITION, ENGLISH_AUDIO_EDITION, URDU_AUDIO_EDITION
+from utils.retry import get_with_retry
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -13,7 +14,7 @@ def _fetch_juz_edition(juz_number: int, edition: str) -> dict | None:
     """Fetch a specific Juz in a specific edition from AlQuran.cloud."""
     url = f"{QURAN_API_BASE}/juz/{juz_number}/{edition}"
     try:
-        response = requests.get(url, timeout=15)
+        response = get_with_retry(url, timeout=15, label=f"quran:juz:{juz_number}:{edition}")
         response.raise_for_status()
         data = response.json()
         if data.get("code") == 200:

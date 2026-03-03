@@ -112,7 +112,12 @@ TAFSEER_PREFERRED_BY_LANGUAGE = {
     ],
 }
 
-# Hadith retrieval in this phase uses curated web search over trusted collections.
+# ── Hadith Source Strategy ─────────────────────────────────────
+# Primary: sunnah.com API (verified hadith with grades).
+# Fallback: Tavily web search filtered to trusted domains (commentary only).
+SUNNAH_API_KEY = get_secret("SUNNAH_API_KEY")
+SUNNAH_API_BASE = "https://api.sunnah.com/v1"
+HADITH_PROVIDER_PRIMARY = "sunnah_api"      # "sunnah_api" | "web_search"
 HADITH_TRUSTED_DOMAINS = [
     "sunnah.com",
     "islamqa.info",
@@ -120,6 +125,37 @@ HADITH_TRUSTED_DOMAINS = [
 HADITH_MAX_RESULTS = 4
 CANONICAL_LINK_FALLBACK = "api_fallback"
 HADITH_CANONICAL_STATUS_DEFAULT = "unverified"
+
+# Hadith collections available via sunnah.com API (name → display label)
+HADITH_COLLECTIONS = {
+    "bukhari": "Sahih al-Bukhari",
+    "muslim": "Sahih Muslim",
+    "abudawud": "Sunan Abu Dawud",
+    "tirmidhi": "Jami` at-Tirmidhi",
+    "nasai": "Sunan an-Nasa'i",
+    "ibnmajah": "Sunan Ibn Majah",
+    "malik": "Muwatta Malik",
+    "riyadussalihin": "Riyad as-Salihin",
+}
+
+# ── Quran.com v4 API ──────────────────────────────────────────
+QURANCOM_API_BASE = "https://api.quran.com/api/v4"
+# Quran.com tafsir resource IDs — real English/Urdu tafseer (not just translations)
+QURANCOM_TAFSIRS = {
+    "en": [
+        {"id": 169, "name": "Tafsir Ibn Kathir", "language": "en"},
+        {"id": 171, "name": "Maariful Quran", "language": "en"},
+        {"id": 168, "name": "Tafsir al-Jalalayn", "language": "en"},
+    ],
+    "ur": [
+        {"id": 159, "name": "Tafsir Ibn Kathir (Urdu)", "language": "ur"},
+        {"id": 819, "name": "Maariful Quran (Urdu)", "language": "ur"},
+    ],
+    "ar": [
+        {"id": 93, "name": "Tafsir al-Tabari", "language": "ar"},
+        {"id": 90, "name": "Tafsir al-Baghawi", "language": "ar"},
+    ],
+}
 
 # UI visibility controls for source transparency details.
 # Keep False for production-facing UX; enable for internal QA/debugging.

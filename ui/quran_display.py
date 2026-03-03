@@ -5,6 +5,7 @@ Renders the dual-pane view: Arabic text (RTL) on the left, English + Urdu transl
 
 import streamlit as st
 from utils.config import GOLD, MIDNIGHT_BLUE
+from utils.sanitize import escape_html
 from ui.verse_context_panel import render_verse_context_panel
 
 AYAHS_PER_PAGE = 5
@@ -75,6 +76,11 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
         ayah_num = ayah.get("number_in_surah", "")
         surah_name = ayah.get("surah_name", "")
 
+        # Escape all API-sourced text for safe HTML rendering
+        arabic_text = escape_html(ayah.get('arabic', ''))
+        english_text = escape_html(ayah.get('english', ''))
+        urdu_text = escape_html(ayah.get('urdu', ''))
+
         rows_html += f"""
         <div class="verse-row" style="
             display: grid;
@@ -96,7 +102,7 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
                         font-family: 'Amiri', serif; font-size: 1.85rem; line-height: 2.3;
                         color: #f8fafc; direction: rtl; text-align: center;
                         margin: 0; text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                    ">{ayah.get('arabic', '')}</p>
+                    ">{arabic_text}</p>
                     <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:1rem;">
                         <span style="
                             display:inline-flex; align-items:center; justify-content:center;
@@ -125,7 +131,7 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
                     <p style="
                         font-family: 'Playfair Display', serif; font-size: 1.05rem; line-height: 1.8;
                         color: #cbd5e1; margin: 0.25rem 0 0 0;
-                    ">{ayah.get('english', '')}</p>
+                    ">{english_text}</p>
                 </div>
 
                 <div>
@@ -136,7 +142,7 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
                     <p style="
                         font-family: 'Amiri', serif; font-size: 1.15rem; line-height: 2;
                         color: #94a3b8; direction: rtl; text-align: right; margin: 0.25rem 0 0 0;
-                    ">{ayah.get('urdu', '')}</p>
+                    ">{urdu_text}</p>
                 </div>
             </div>
         </div>
@@ -209,4 +215,7 @@ def render_quran_view(ayahs: list[dict], current_index: int = 0):
 
     # ── Tafseer + Hadith Context Panel ───────────────────────
     active_idx = min(st.session_state.get("current_ayah_index", 0), len(ayahs) - 1)
-    render_verse_context_panel(ayahs[active_idx])
+    try:
+        render_verse_context_panel(ayahs[active_idx])
+    except Exception:
+        st.caption("⚠️ Verse context temporarily unavailable. Please try another ayah.")

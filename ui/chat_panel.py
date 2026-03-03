@@ -7,6 +7,8 @@ import streamlit as st
 from datetime import datetime
 from html import escape
 from utils.config import GOLD, GEMINI_API_KEY, get_logo_base64
+from utils.evidence import format_confidence
+from utils.sanitize import escape_html
 from agents.router import classify_intent
 from agents.scholar import get_scholar_response
 from rag.pdf_loader import extract_and_chunk
@@ -180,6 +182,10 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
 
     if role == "assistant":
         answer_body, sources = _split_answer_and_sources(content)
+        is_pdf = "PDF" in (intent_badge or "")
+        # Different border color for PDF-sourced answers to visually distinguish from Islamic scholarship
+        border_style = "border: 1px solid rgba(59, 130, 246, 0.3);" if is_pdf else "border: 1px solid var(--glass-border);"
+        pdf_notice = '<p style="font-size:0.6rem;color:#60a5fa;margin:0 0 0.5rem 0;font-weight:600;">📄 Based on uploaded PDF — not verified Islamic scholarship</p>' if is_pdf else ""
         st.html(
             f"""
             <div class="animate-reveal" style="margin-bottom: 1.25rem; font-family: Inter, sans-serif;">
@@ -190,14 +196,14 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
                 </div>
                 <div style="
                     background: rgba(30, 41, 59, 0.4);
-                    border: 1px solid var(--glass-border);
+                    {border_style}
                     padding: 0.85rem 1.1rem;
                     border-radius: var(--sharp-radius);
                     font-size: 0.85rem; line-height: 1.7; color: #cbd5e1;
                     max-width: 95%;
                     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
                 ">
-                    {answer_body}
+                    {pdf_notice}{answer_body}
                 </div>
             </div>
             """
@@ -207,7 +213,13 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
             sources_html = []
             for source in sources:
                 label = escape(source["label"])
-                canonical_badge = escape((source.get("canonical") or "unverified").upper())
+                # Use shared confidence formatter instead of raw canonical status
+                source_type = (source.get("type") or "source").lower()
+                confidence = format_confidence(
+                    status=source.get("canonical", "unverified"),
+                    source_type=source_type,
+                )
+                confidence_escaped = escape(confidence)
                 meta = []
                 if source.get("type"):
                     meta.append(source["type"].upper())
@@ -220,14 +232,14 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
                 if source["url"]:
                     sources_html.append(
                         f'<li style="margin-bottom:0.55rem;">'
-                        f'<a href="{source["url"]}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:none;">{label}</a>'
-                        f'<div style="font-size:0.62rem;color:#94a3b8;margin-top:0.15rem;">{escape(meta_text)} • Canonical {canonical_badge}</div>'
+                        f'<a href="{escape(source["url"])}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:none;">{label}</a>'
+                        f'<div style="font-size:0.62rem;color:#94a3b8;margin-top:0.15rem;">{escape(meta_text)} • Confidence: {confidence_escaped}</div>'
                         f'</li>'
                     )
                 else:
                     sources_html.append(
                         f'<li style="margin-bottom:0.55rem;color:#94a3b8;">{label}'
-                        f'<div style="font-size:0.62rem;color:#94a3b8;margin-top:0.15rem;">{escape(meta_text)} • Canonical {canonical_badge}</div>'
+                        f'<div style="font-size:0.62rem;color:#94a3b8;margin-top:0.15rem;">{escape(meta_text)} • Confidence: {confidence_escaped}</div>'
                         f'</li>'
                     )
 
@@ -261,7 +273,7 @@ def _render_message(role: str, content: str, timestamp: str, intent_badge: str =
                     font-size: 0.85rem; line-height: 1.7; color: #e2e8f0;
                     max-width: 90%;
                 ">
-                    {content}
+                    {escape_html(content)}
                 </div>
             </div>
             """

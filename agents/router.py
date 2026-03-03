@@ -6,6 +6,9 @@ Categories: VERSE_LOOKUP, SCHOLARLY_RESEARCH, PDF_ANALYSIS
 
 from google import genai
 from utils.config import MODEL_ROUTER, GEMINI_API_KEY, get_gemini_client
+from utils.logger import get_logger
+
+log = get_logger("router")
 
 ROUTER_SYSTEM_PROMPT = """You are an intent classifier for an Islamic Quranic research application called Hidayah AI.
 
@@ -44,7 +47,7 @@ def classify_intent(query: str, active_pdf_name: str | None = None) -> str:
         )
 
         if not response.text:
-            print(f"🚦 [ROUTER] Empty response from model. Defaulting to: SCHOLARLY_RESEARCH")
+            log.warning("Empty response from model. Defaulting to: SCHOLARLY_RESEARCH")
             return "SCHOLARLY_RESEARCH"
 
         result = response.text.strip().upper()
@@ -52,18 +55,18 @@ def classify_intent(query: str, active_pdf_name: str | None = None) -> str:
         # Validate the response is one of the expected categories
         valid_categories = {"VERSE_LOOKUP", "SCHOLARLY_RESEARCH", "PDF_ANALYSIS"}
         if result in valid_categories:
-            print(f"🚦 [ROUTER] Classified intent as: {result}")
+            log.info(f"Classified intent as: {result}")
             return result
 
         # Fuzzy match (check if category is in result OR result is in category)
         for cat in valid_categories:
             if cat in result or (len(result) >= 3 and result in cat):
-                print(f"🚦 [ROUTER] Fuzzy matched intent as: {cat} (from: {result})")
+                log.info(f"Fuzzy matched intent as: {cat} (from: {result})")
                 return cat
 
-        print(f"🚦 [ROUTER] Defaulting to: SCHOLARLY_RESEARCH (parsed unhandled: {result})")
+        log.warning(f"Defaulting to: SCHOLARLY_RESEARCH (parsed unhandled: {result})")
         return "SCHOLARLY_RESEARCH"
 
     except Exception as e:
-        print(f"❌ [ROUTER] Classification error: {e}")
+        log.error(f"Classification error: {e}")
         return "SCHOLARLY_RESEARCH"

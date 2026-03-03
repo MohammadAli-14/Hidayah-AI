@@ -309,3 +309,12 @@ if show_chat:
 st.query_params["juz"] = st.session_state.get("current_juz", 1)
 st.query_params["ayah"] = st.session_state.get("current_ayah_index", 0)
 st.query_params["mode"] = st.session_state.get("audio_mode", "Arabic (Mishary Rashid)")
+
+# ── Global Disclaimer ────────────────────────────────────────────
+st.html(
+    '<div style="text-align:center; padding:1rem 0 0.5rem 0; border-top:1px solid rgba(148,163,184,0.08); margin-top:2rem;">'
+    '<p style="font-size:0.6rem; color:#64748b; font-family:Inter,sans-serif; margin:0;">'
+    'Hidayah AI provides research assistance only. For fiqh rulings and religious guidance, consult qualified scholars. '
+    'Tafseer and Hadith sources are provided for verification. AI can make mistakes.'
+    '</p></div>'
+)

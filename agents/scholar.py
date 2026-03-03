@@ -1,6 +1,6 @@
 """
 Hidayah AI — Scholar Agent
-Uses Gemini 2.5 Pro for deep scholarly reasoning, tafsir, and research synthesis.
+Uses Gemini 2.5 Flash for grounded scholarly responses with strict citation rules.
 Routes to appropriate data source based on classified intent.
 """
 
@@ -8,18 +8,30 @@ from google import genai
 from utils.config import MODEL_SCHOLAR, GEMINI_API_KEY, get_gemini_client
 from agents.web_search import search_web
 from agents.context_retriever import get_context_bundle_for_window
+from utils.trust import is_trusted_scholarly
+from utils.logger import get_logger
+
+log = get_logger("scholar")
 
 SCHOLAR_SYSTEM_PROMPT = """You are Hidayah AI, an Islamic scholarly research assistant. You are knowledgeable, respectful, and precise.
 
+STRICT GROUNDING RULES (CRITICAL — violations cause spiritual harm):
+- ONLY cite Quran verses, Tafseer passages, and Hadith that appear in the provided Context section below.
+- NEVER generate, paraphrase, or fabricate hadith text, chain of narrators (isnad), or specific scholarly rulings.
+- NEVER invent or guess scholarly opinions not explicitly present in the context.
+- If citing a hadith, you MUST use the [H#] citation marker that corresponds to the provided context.
+- If citing tafseer, you MUST use the [T#] citation marker from the context.
+- If the context does not contain enough information to answer, clearly state: "I don't have authenticated sources for this specific question. Please consult a qualified scholar."
+
 Guidelines:
 1. Begin responses with "Assalamu Alaykum" when appropriate.
-2. Cite sources clearly: Quran verses (Surah:Ayah), Hadith collections, and scholarly names.
-3. When discussing fiqh, mention the relevant madhab perspectives where applicable.
+2. Cite sources clearly using [T#]/[H#] markers from the context.
+3. When discussing fiqh, present scholarly positions with attribution only. NEVER issue personal fiqh rulings.
 4. Use a warm, scholarly tone — like a knowledgeable teacher.
-5. If uncertain, say so clearly. Never fabricate scholarly opinions.
-6. End with a reminder: "Please verify with qualified scholars for fiqh rulings."
-7. Support both English and Urdu — respond in the language the user asks in.
-8. When referencing Quranic text, include the Arabic if relevant.
+5. Always end with: "Please verify with qualified scholars for specific rulings."
+6. Support both English and Urdu — respond in the language the user asks in.
+7. When referencing Quranic text, include the Arabic if relevant.
+8. Distinguish between verified hadith (graded Sahih/Hasan) and unverified references.
 
 You serve as a bridge between classical Islamic scholarship and modern seekers of knowledge."""
 
@@ -49,7 +61,7 @@ def get_scholar_response(
         return "⚠️ **Gemini API key not configured.** Please add `GEMINI_API_KEY` to your settings (Secrets on Streamlit Cloud or .env locally)."
 
     try:
-        print(f"📖 [SCHOLAR] Assembling context. Intent: {intent}")
+        log.info(f"Assembling context. Intent: {intent}")
         # Build context based on intent
         context_parts = []
         grounded_sources = []
@@ -127,14 +139,23 @@ def get_scholar_response(
                 context_parts.append("Related Hadith references:\n" + "\n\n".join(hadith_context_lines[:5]))
 
         elif intent == "SCHOLARLY_RESEARCH":
-            # Fetch web results for additional context
+            # Fetch web results — domain-filtered to trusted Islamic sources only
             web_results = search_web(f"Islamic scholarly {query}")
-            if web_results:
+            trusted_results = []
+            for r in (web_results or []):
+                url = r.get("url", "")
+                if not url or is_trusted_scholarly(url):
+                    trusted_results.append(r)
+            if trusted_results:
                 web_text = "\n\n".join(
                     f"Source: {r['title']}\nURL: {r['url']}\n{r['content']}"
-                    for r in web_results[:3]
+                    for r in trusted_results[:3]
                 )
-                context_parts.append(f"Web research results:\n{web_text}")
+                context_parts.append(f"Web research results (domain-verified sources only):\n{web_text}")
+                context_parts.append(
+                    "⚠️ NOTE: The above web sources are from trusted Islamic domains but "
+                    "have not been individually verified. Present information with appropriate caveats."
+                )
 
         elif intent == "PDF_ANALYSIS" and pdf_context:
             context_parts.append(f"Relevant excerpts from the uploaded PDF:\n{pdf_context}")
@@ -145,13 +166,13 @@ def get_scholar_response(
             context_str = "\n\n---\n\n".join(context_parts)
             full_prompt = f"Context:\n{context_str}\n\n---\n\nUser Question: {query}"
 
-        print(f"🧠 [SCHOLAR] Sending final prompt to {MODEL_SCHOLAR} (Context parts: {len(context_parts)})...")
+        log.info(f"Sending final prompt to {MODEL_SCHOLAR} (Context parts: {len(context_parts)})")
         response = client.models.generate_content(
             model=MODEL_SCHOLAR,
             contents=full_prompt,
             config=genai.types.GenerateContentConfig(
                 system_instruction=SCHOLAR_SYSTEM_PROMPT,
-                temperature=0.7,
+                temperature=0.3,
                 max_output_tokens=2048,
             ),
         )
@@ -159,7 +180,7 @@ def get_scholar_response(
         if not response.text:
             return "⚠️ **Scholar Agent error:** The model returned an empty response. This might be due to safety filters or a temporary connection issue."
 
-        print("✨ [SCHOLAR] Response generated successfully.")
+        log.info("Response generated successfully.")
         answer = response.text
         if grounded_sources:
             answer += "\n\nSources:\n" + "\n".join(f"- {src}" for src in grounded_sources)

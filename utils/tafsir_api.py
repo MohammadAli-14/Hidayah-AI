@@ -1,6 +1,9 @@
 """
 Hidayah AI — Tafseer API Adapter
-Fetches ayah-specific Tafseer from AlQuran.cloud editions.
+Multi-provider approach:
+  - Primary (EN/UR): Quran.com v4 (real tafseer — Ibn Kathir, Maariful Quran, etc.)
+  - Primary (AR): AlQuran.cloud (strong Arabic tafsir corpus)
+  - Fallback: AlQuran.cloud translations (labeled as explanatory)
 """
 
 import requests
@@ -12,8 +15,13 @@ from utils.config import (
     TAFSEER_SOURCE_TARGET_COUNT,
     TAFSEER_PREFERRED_BY_LANGUAGE,
     TAFSEER_ALLOW_TRANSLATION_AS_EXPLANATORY,
+    TAFSEER_PROVIDER_PRIMARY,
 )
 from utils.evidence import normalize_tafseer
+from utils.logger import get_logger
+from utils.retry import get_with_retry
+
+log = get_logger("tafsir_api")
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -30,7 +38,7 @@ def fetch_tafseer_for_ayah(
     human_url = f"https://alquran.cloud/ayah/{surah_number}/{ayah_number}"
 
     try:
-        response = requests.get(url, timeout=15)
+        response = get_with_retry(url, timeout=15, label=f"alquran:tafsir:{edition}")
         response.raise_for_status()
         payload = response.json()
         if payload.get("code") != 200:
@@ -176,14 +184,81 @@ def fetch_multisource_tafseer_for_ayah(
     language: str,
     max_sources: int = TAFSEER_SOURCE_TARGET_COUNT,
 ) -> list[dict]:
-    """Fetch up to top-N native tafseer sources for an ayah in the requested language."""
-    requested_language = (language or "").strip().lower()
-    sources = get_ranked_tafseer_sources(language=requested_language, max_sources=max_sources)
-    resolved_language = requested_language
+    """Fetch up to top-N tafseer sources for an ayah using multi-provider strategy.
 
-    if not sources and requested_language in {"en", "ur"}:
-        resolved_language = "ar"
-        sources = get_ranked_tafseer_sources(language=resolved_language, max_sources=max_sources)
+    Provider priority:
+      - EN/UR: Quran.com v4 first (real tafseer), then AlQuran.cloud as fallback.
+      - AR: AlQuran.cloud first (strong Arabic corpus), then Quran.com as fallback.
+    """
+    requested_language = (language or "").strip().lower()
+    tafseer_items = []
+
+    # ── Step 1: Try Quran.com v4 for EN/UR (real tafseer) ────────
+    if requested_language in {"en", "ur"}:
+        try:
+            from utils.qurancom_api import fetch_multisource_tafseer_for_ayah as qurancom_fetch
+            tafseer_items = qurancom_fetch(
+                surah_number=surah_number,
+                ayah_number=ayah_number,
+                language=requested_language,
+                max_sources=max_sources,
+            )
+            if tafseer_items:
+                log.info(f"Quran.com v4 returned {len(tafseer_items)} tafsir for {surah_number}:{ayah_number} ({requested_language})")
+                return tafseer_items[:max_sources]
+        except Exception as e:
+            log.warning(f"Quran.com v4 provider error: {e}")
+
+    # ── Step 2: AlQuran.cloud (primary for AR, fallback for EN/UR) ──
+    tafseer_items = _fetch_from_alquran_cloud(
+        surah_number=surah_number,
+        ayah_number=ayah_number,
+        language=requested_language,
+        max_sources=max_sources,
+    )
+
+    if tafseer_items:
+        return tafseer_items[:max_sources]
+
+    # ── Step 3: Language fallback — try AR if EN/UR returned nothing ──
+    if requested_language in {"en", "ur"}:
+        log.info(f"No tafseer for {requested_language}, falling back to Arabic")
+        tafseer_items = _fetch_from_alquran_cloud(
+            surah_number=surah_number,
+            ayah_number=ayah_number,
+            language="ar",
+            max_sources=max_sources,
+            mark_as_fallback=True,
+            requested_language=requested_language,
+        )
+
+    # ── Step 4: Last resort — try Quran.com for AR ──
+    if not tafseer_items and requested_language == "ar":
+        try:
+            from utils.qurancom_api import fetch_multisource_tafseer_for_ayah as qurancom_fetch
+            tafseer_items = qurancom_fetch(
+                surah_number=surah_number,
+                ayah_number=ayah_number,
+                language="ar",
+                max_sources=max_sources,
+            )
+        except Exception as e:
+            log.warning(f"Quran.com v4 AR fallback error: {e}")
+
+    return tafseer_items[:max_sources]
+
+
+def _fetch_from_alquran_cloud(
+    surah_number: int,
+    ayah_number: int,
+    language: str,
+    max_sources: int,
+    mark_as_fallback: bool = False,
+    requested_language: str = "",
+) -> list[dict]:
+    """Fetch tafseer from AlQuran.cloud editions."""
+    sources = get_ranked_tafseer_sources(language=language, max_sources=max_sources)
+    resolved_language = language
 
     tafseer_items = []
 
@@ -230,8 +305,9 @@ def fetch_multisource_tafseer_for_ayah(
                         "edition_english_name": source.get("english_name", ""),
                         "language": source.get("language") or resolved_language,
                         "source_type": source.get("type", "tafsir"),
-                        "requested_language": requested_language,
-                        "fallback_language_used": resolved_language != requested_language,
+                        "requested_language": requested_language or language,
+                        "fallback_language_used": mark_as_fallback,
+                        "provider": "alquran_cloud",
                         "api_url": url,
                         "canonical_url_human": human_url,
                     },
